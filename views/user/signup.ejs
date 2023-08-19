@@ -1,0 +1,114 @@
+<%- include('../layouts/user-header.ejs') %>
+
+<section class="register-form">
+
+  
+    <form id="user-signup-form" method="post" action="/api/v1/users/register" >
+
+        <% success.forEach(function(msg){ %>
+            <div class="alert alert-success" role="alert">
+                <%= msg %>
+            </div>
+          <%})%>
+          
+          <% error.forEach(function(err){ %>
+            <div class="alert alert-danger" role="alert">
+                <%= err %>
+            </div>
+          <%})%>
+      
+        <h3>Register Now</h3>
+        <div class="inputBox">
+            <span class="fas fa-user"></span>
+            <input type="text" name="name" placeholder="Enter your name" id="name">
+        </div>
+        <div class="inputBox">
+            <span class="fas fa-envelope"></span>
+            <input type="email" name="email" placeholder="Enter your email" id="email">
+        </div>
+        <div class="inputBox">
+          <span class="fas fa-phone"></span>
+          <input type="number" name="contact" placeholder="Enter your contact no." id="contact">
+        </div>
+        <div class="inputBox">
+            <span class="fas fa-lock"></span>
+            <input type="password" name="password" placeholder="Enter your password" id="password">
+        </div>
+        <!-- <div class="inputBox">
+            <span class="fas fa-lock"></span>
+            <input type="password" name="cpassword" placeholder="Confirm your password" id="cpassword">
+        </div> -->
+        <input type="hidden" value="" name="image">
+        <input type="submit" value="sign up" class="btn">
+        <a href="/login" class="btn">Already have an account</a>
+    </form>
+
+</section>
+<!-- <script>
+	function check()
+{
+
+    var mobile = document.getElementById('mobile');
+   
+    
+    var message = document.getElementById('message');
+
+   var goodColor = "#0C6";
+    var badColor = "#FF9B37";
+  
+    if(mobile.value.length!=10){
+       
+        mobile.style.backgroundColor = badColor;
+        message.style.color = badColor;
+        message.innerHTML = "Required 10 digits, match requested format!"
+    }
+	else{
+		mobile.style.backgroundColor = goodColor;
+		message.style.color = goodColor;
+		message.innerHTML = " "
+	}
+	}
+
+	function alphaOnly(event) {
+  var key = event.keyCode;
+  return ((key >= 65 && key <= 90) || key == 8);
+};
+
+function checkpwd(){
+ var pwd=document.getElementById("pwd");
+ var msge=document.getElementById("mssge");
+ var goodColor = "#0C6";
+ var badColor = "#FF9B37";
+ if(pwd.value.length!=8){
+	pwd.style.backgroundColor = badColor;
+	msge.style.color = badColor;
+	msge.innerHTML = "Required atleast 8 characters including alphanumeric and special characters"
+ }
+ else{
+	pwd.style.backgroundColor = goodColor;
+	msge.style.color = goodColor;
+	msge.innerHTML = " "
+ }
+} -->
+
+<!-- </script> -->
+
+
+
+
+<%- include('../layouts/user-footer.ejs') %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
