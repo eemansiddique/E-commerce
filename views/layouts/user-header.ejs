@@ -24,6 +24,11 @@
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" ></script>	
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+ 
+<!-- zoom image -->
+ <link rel="stylesheet" href="path/to/css-zoom.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     
 
 </head>
@@ -69,13 +74,13 @@
             <div id="search-btn" class="fas fa-search"></div>
             <a href="/wishlist" ><i class="fa fa-heart position-relative">
                 <% if (locals.user){%>
-                    <span id="wishlist-count" class="position-absolute top-25 translate-middle badge rounded-pill bg-dark"></span>
+                    <span id="wishlist-count" class="position-absolute top-25 translate-middle badge rounded-pill bg-dark"><%=wishcount%></span>
                     <%}%>
                 </i>
             </i></a>
             <a href="/cart"> <i class="fas fa-shopping-cart position-relative">
                 <% if (locals.user){%>
-                <span id="cart-count" class="position-absolute top-25 translate-middle badge rounded-pill bg-dark"></span>
+                <span id="cart-count" class="position-absolute top-25 translate-middle badge rounded-pill bg-dark"><%=count%></span>
                 <%}%>
             </i></a>
             <div id="menu-btn" class="fas fa-bars"></div>

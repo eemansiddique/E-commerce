@@ -1,10 +1,10 @@
-<%- include('../layouts/admin-header.ejs') %>
+<%- include('../layouts/admin-header1.ejs') %>
 
             
 <!-- <section class="login-form login-admin">  -->
   <div class="dash-content login-form login-admin">
 
-  <form id="admin-login-form" action="/api/v1/admin/" method="post">
+  <form id="admin-login-form" action="/admin/" method="post">
    
     <% error.forEach(function(err){ %>
       <div class="alert alert-danger" role="alert">
@@ -69,4 +69,4 @@
 
         
 
-<%- include('../layouts/admin-footer.ejs') %>
+<!-- <%- include('../layouts/admin-footer.ejs') %> -->

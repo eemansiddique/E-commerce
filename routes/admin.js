@@ -29,7 +29,7 @@ const Admin = require('../model/admin');
 router.get('/', async(req, res) => {
     if (req.session.admin)
  
-        res.redirect('/api/v1/admin/dashboard');
+        res.redirect('/admin/dashboard');
 
     else {
 
@@ -39,30 +39,70 @@ router.get('/', async(req, res) => {
 });
 
 router.post('/', async (req, res) => {
-
     const { email, password } = req.body;
-    // console.log(req.body)
-    const adminData = await Admin.find({ email: email, password: password });
-    console.log(adminData);
-    if (adminData) {
+
+    try {
+        const adminData = await Admin.findOne({ email }); // Use findOne instead of find
+
+        if (!adminData) {
+            req.flash('error', 'Incorrect email or password'); // Inform the user that no admin was found
+            return res.redirect('/admin');
+        }
+
+        const passwordMatch = await bcrypt.compare(password, adminData.password);
         
-        req.session.admin = true;
-         res.redirect('/api/v1/admin/dashboard');
-    
-         const passwordMatch = await bcrypt.compare(password, adminData.password);
         if (!passwordMatch) {
-          req.flash("error", "Your Password is wrong!");
-      
-          return res.redirect('/api/v1/admin/');
-            } else {
+            req.flash('error', 'Your password is wrong!'); // Password doesn't match
+            return res.redirect('/admin');
+        }
 
-         req.flash('error', 'Incorrect email or password');
-         return res.redirect('/api/v1/admin/');
-
+        req.session.admin = true; // Authentication successful
+        res.redirect('/admin/dashboard');
+    } catch (error) {
+        console.error('Error:', error);
+        req.flash('error', 'An error occurred. Please try again later.');
+        return res.redirect('/admin');
     }
-}
-
 });
+
+// let admin
+// router.get('/', async(req, res) => {
+//     if (req.session.admin)
+ 
+//         res.redirect('/api/v1/admin/dashboard');
+
+//     else {
+
+//         const error = req.flash('error');
+//         res.render('admin/login', { error: error });
+//     }
+// });
+
+// router.post('/', async (req, res) => {
+
+//     const { email, password } = req.body;
+//     // console.log(req.body)
+//     const adminData = await Admin.find({ email: email, password: password });
+//     console.log(adminData);
+//     if (adminData) {
+        
+//         req.session.admin = true;
+//          res.redirect('/api/v1/admin/dashboard');
+    
+//          const passwordMatch = await bcrypt.compare(password, adminData.password);
+//         if (!passwordMatch) {
+//           req.flash("error", "Your Password is wrong!");
+      
+//           return res.redirect('/api/v1/admin/');
+//             } else {
+
+//          req.flash('error', 'Incorrect email or password');
+//          return res.redirect('/api/v1/admin/');
+
+//     }
+// }
+
+// });
 // router.post("/",async(req,res)=>{
 //     const hashedPassword = await bcrypt.hash(req.body.password, 10);
 //     const admin = new Admin({
@@ -75,6 +115,7 @@ router.post('/', async (req, res) => {
 //             console.log("Successfully created admin");
 //         }
 // })
+
 let admin
 router.get('/dashboard',auth.isAdmin, async (req, res) => {
 
@@ -83,19 +124,88 @@ res.render('admin/dashboard',{admin} );
 
 });
 
-router.get('/users', auth.isAdmin, async (req, res) => {
+// router.get('/users', auth.isAdmin, async (req, res) => {
 
-    let count = await User.count();
+//     let count = await User.count();
 
-    User.find((err, users) => {
+//     User.find((err, users) => {
 
-        if (err) return console.log(err);
+//         if (err) return console.log(err);
 
-        admin = req.session.admin;
+//         admin = req.session.admin;
 
-        res.render('admin/users', { users: users, admin, count });
+//         res.render('admin/users', { users: users, admin, count });
+
+//     });
+
+// });
+
+// router.get('/users', (req, res) => {
+    
+//     res.send('rendering my users page');
+//   });
+
+router.get('/users',async (req, res) => {
+    try {
+        const count = await User.countDocuments();
+        const users = await User.find();
+        
+
+        const admin = req.session.admin;
+
+        res.render('admin/users', { users:users, admin, count });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Internal Server Error');
+    }
+});
+// router.get('/users',auth.isAdmin, async (req, res) => {
+//     try {
+//         const users = await User.find({" auth.isAdmin": false });
+//         const count = users.length;
+
+//         const admin = req.session.admin;
+
+//         res.render('admin/users', { users:users, admin, count });
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).send('Internal Server Error');
+//     }
+// });
+// });
+router.get('/logout', (req, res) => {
+
+    req.session.destroy();
+    res.redirect('/admin');
+ 
+});
+router.get('/users/block/:id', (req, res) => {
+
+    User.findByIdAndUpdate(req.params.id, { status: "true" }).then((err) => {
+
+        if (err) console.log(err);
+
+        res.redirect('/admin/users');
 
     });
+
+});
+
+router.get('/users/unblock/:id', auth.isAdmin, (req, res) => {
+
+    User.findByIdAndUpdate(req.params.id, { status: "false" }).then((err) => {
+
+        if (err) console.log(err);
+
+        res.redirect('/admin/users');
+
+    });
+
+});
+
+router.get('/not', (req, res) => {
+
+    res.render('admin/404');
 
 });
 

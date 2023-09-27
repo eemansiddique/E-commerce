@@ -6,7 +6,7 @@ $(document).on("turbolinks:load", function () {
   
   $("#add-edit").validate({
     errorClass: "error fail-alert",
-    // validClass: "valid success-alert"
+    //  validClass: "valid success-alert",
   
     rules: {
       title: {
@@ -70,6 +70,8 @@ $(document).on("turbolinks:load", function () {
         email: true,
       },
       contact: {
+        minlength: 10,
+        maxlength:10,
         required: true,
         number: true,
       },
@@ -323,7 +325,6 @@ $(document).on("turbolinks:load", function () {
   $("#image").change(function () {
     readURL(this);
   });
-  
   function editProfile() {
     $("#edit-profile").toggleClass("hide");
   }
@@ -337,400 +338,608 @@ $(document).on("turbolinks:load", function () {
   if ($("[data-fancybox]").length) {
     $("[data-fancybox]").fancybox();
   }
-  
+
   // Get the modal
-  var modal = document.getElementById("id01");
-  
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
-  };
-  
-  function addToCart(proId, wt) {
-    $.ajax({
-      url: "/cart/add/" + proId,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          console.log("succ");
-          location.reload();
+var modal = document.getElementById("id01");
+
+// When the user clicks anywhere outside of the modal, close it
+window.onclick = function (event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+};
+
+
+
+document.addEventListener("DOMContentLoaded", function (event) {});
+
+//me set
+//from product page click the wishlist button product added to wishlist page
+function addToWishlist(proId) {
+  $("#" + proId + "-heart").toggleClass("fa-like");
+
+  $.ajax({
+    url: "/wishlist/add/" + proId,
+    method: "get",
+    success: (response) => {
+      if (response.status) {
+        if (response.item == "added") {
+          $("#" + proId + "-heart").css({ color: "red", background: "white" });
         } else {
-          console.log("no user");
-          location.href = "/login";
+          $("#" + proId + "-heart").css({ color: "white" });
         }
-      },
-    });
-  }
-  function removeFromCart(proId, wt) {
-    $.ajax({
-      url: "/cart/delete/" + proId + "/" + wt,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          location.reload();
-        }
-      },
-    });
-  }
-  function changeQuantity(proId, wt, price, count) {
-    let qty = $("#qtyOf" + proId).text();
-  
-    $.ajax({
-      url: "/cart/change-quantity",
-      data: {
-        proId: proId,
-        wt: wt,
-        price: price,
-        count: count,
-        qty: parseInt(qty),
-      },
-      method: "post",
-      success: (response) => {
-        // if(response.status){
-        console.log(response);
-  
         location.reload();
-      },
-    });
-  }
-  
-  function getPrice(proId, proprice, cartprice, wt) {
-    let qty = $("#qtyOf" + proId).text();
-  
-    $.ajax({
-      url: "/cart/change-weight",
-      data: {
-        proId: proId,
-        proprice: proprice,
-        cartprice,
-        cartprice,
-        wt: wt,
-        qty: qty,
-      },
-      method: "post",
-      success: (response) => {
-        if (response.status) {
-          location.reload();
-        }
-      },
-    });
-  }
-  
-  function addToWishlist(proId) {
-    $("#" + proId + "-heart").toggleClass("fa-like");
-  
-    $.ajax({
-      url: "/wishlist/add/" + proId,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          if (response.item == "added") {
-            $("#" + proId + "-heart").css({ color: "red", background: "white" });
-          } else {
-            $("#" + proId + "-heart").css({ color: "white" });
-          }
-          location.reload();
-        } else {
-          location.href = "/login";
-        }
-      },
-    });
-  }
-  
-  function addToCartAndRemove(proId) {
-    $.ajax({
-      url: "/cart/add/" + proId,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          removeFromWishlist(proId);
-          location.reload();
-        }
-      },
-    });
-  }
-  function removeFromWishlist(proId) {
-    $.ajax({
-      url: "/wishlist/delete/" + proId,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          //  let count =  $("#cart-count").html();
-          //  count = parseInt(count)-1 ;
-          //   $('#cart-count').html(count);
-          location.reload();
-        }
-      },
-    });
-  }
-  
-  function selectAddress(addressIndex) {
-    $.ajax({
-      url: "/cart/place-order/select-address",
-      method: "post",
-      data: {
-        addressIndex: addressIndex,
-      },
-      success: (response) => {
-        if (response.status) {
-          location.reload();
-          console.log(response);
-        }
-      },
-    });
-  }
-  
-  $("#payment-form").validate({
-    errorClass: "error fail-alert",
-    rules: {
-      payment: {
-        required: true,
-      },
-    },
-    messges: {
-      payment: {
-        required: "Select payment method",
-      },
-    },
-    errorPlacement: function (error, element) {
-      if (element.is(":radio")) {
-        error.insertBefore($(element).parents(".pay-form"));
       } else {
-        // This is the default behavior
-        error.insertAfter(element);
+        location.href = "/login";
       }
     },
   });
-  
-  $("#payment-form").submit((e) => {
-    e.preventDefault();
-    $.ajax({
-      url: "/cart/payment",
-      method: "post",
-      data: $("#payment-form").serialize(),
-      success: (response) => {
-        // alert(response)
-        if (response.codStatus == "placed") {
-          console.log(response);
-          console.log(response.status);
-  
-          location.href = "/cart/place-order/success";
-        } else {
-          console.log(response + "response");
-          razorpayPayment(response);
-        }
-      },
-    });
-  });
-  
-  function razorpayPayment(order) {
-    var options = {
-      key: "rzp_test_M7kqvBj4orNzLd", // Enter the Key ID generated from the Dashboard
-      amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
-      currency: "INR",
-      name: "cakes.N.bakes",
-      description: "Test Transaction",
-      image: "https://example.com/your_logo",
-      order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-      handler: function (response) {
-        // alert(response.razorpay_payment_id);
-        // alert(response.razorpay_order_id);
-        // alert(response.razorpay_signature);
-        console.log("verify fn");
-        verifyPayment(response, order);
-      },
-      prefill: {
-        name: "Gaurav Kumar",
-        email: "gaurav.kumar@example.com",
-        contact: "9999999999",
-      },
-      notes: {
-        address: "Razorpay Corporate Office",
-      },
-      theme: {
-        color: "#3399cc",
-      },
-    };
-    var rzp1 = new Razorpay(options);
-    rzp1.open();
-  }
-  
-  function verifyPayment(payment, order) {
-    $.ajax({
-      url: "/cart/verify-payment",
-      data: {
-        payment,
-        order,
-      },
-      method: "post",
-      success: (response) => {
-        if (response.status) {
-          location.href = "/cart/place-order/success";
-        }
-      },
-    });
-  }
-  
-  function cancelOrder(id) {
-    $.ajax({
-      url: "/orders/order-cancel/" + id,
-      method: "get",
-      success: (response) => {
-        if (response.status) {
-          location.reload();
-        }
-      },
-    });
-  }
-  
-  function changeStatus(id) {
-    let status = $("#update-order-status").val();
-    $.ajax({
-      url: "/admin/orders/change-status/" + id,
-      method: "post",
-      data: {
-        status,
-      },
-      success: (response) => {
-        console.log("response got");
-        if (response.status) {
-          console.log("response true");
-          location.reload();
-        }
-      },
-    });
-  }
-  $(".alert-danger").fadeOut(5000);
-  $(".alert-success").fadeOut(5000);
-  
-  function getProducts() {
-    let category = $("#categoryFilter").val();
-    let sort = $("#sort").val();
-    console.log(sort + " sort");
-    $.ajax({
-      url: "/products/" + category,
-      method: "get",
-      data: {
-        sort: sort,
-      },
-      success: (response) => {
-        console.log("response got");
-        // if (response.status) {
-        //   console.log('response true');
-        if (category == "All") {
-          location.href = "/products";
-        } else if (category == "vegan") {
-          location.href = "products/vegan";
-        } else {
-          location.href = "/products/" + category;
-        }
-        // }
-      },
-    });
-  }
-  
-  // Get the modal
-  var modal = document.getElementById("myModal");
-  
-  // Get the button that opens the modal
-  var btn = document.getElementById("myBtn");
-  
-  // Get the <span> element that closes the modal
-  var span = document.getElementsByClassName("modal-close")[0];
-  
-  // When the user clicks on the button, open the modal
-  btn.onclick = function () {
-    modal.style.display = "block";
-  };
-  
-  // When the user clicks on <span> (x), close the modal
-  span.onclick = function () {
-    modal.style.display = "none";
-  };
-  
-  // When the user clicks anywhere outside of the modal, close it
-  window.onclick = function (event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
-    }
-  };
-  
-  $("#coupon-form").validate({
-    errorClass: "error fail-alert",
-  
-    rules: {
-      coupon: {
-        required: true,
-      },
-    },
-    messages: {
-      coupon: {
-        required: "Please enter your coupon name.",
-      },
-    },
-  
-    submitHandler: function applyCoupon(form) {
-      $.ajax({
-        url: form.action,
-        method: form.method,
-        data: $(form).serialize(),
-        success: (response) => {
-          location.reload();
-        },
-      });
+}
+
+
+//click the cross icon from the wishlist page ,product remove from wishlist page
+function removeFromWishlist(proId) {
+  $.ajax({
+    url: "/wishlist/delete/" + proId,
+    method: "get",
+    success: (response) => {
+      if (response.status) {
+        //  let count =  $("#cart-count").html();
+        //  count = parseInt(count)-1 ;
+        //   $('#cart-count').html(count);
+        location.reload();
+      }
     },
   });
+}
   
-  //-------- search-bar
-  
-  function sendData(e) {
-    const searchResults = document.getElementById("search-results");
-    let match = e.value.match(/^[a-zA-Z ]*/);
-    let match2 = e.value.match(/\s*/);
-    if (match2[0] === e.value) {
-      searchResults.innerHTML = "";
-      return;
+//click cart button product added to cart
+function addToCart(proId, wt) {
+  $.ajax({
+    url: "/cart/add/" + proId,
+    method: "get",
+    success: (response) => {
+      if (response.status) {
+        console.log("succ");
+        location.reload();
+      } else {
+        console.log("no user");
+        location.href = "/login";
+      }
+    },
+  });
+}
+//get products type category
+function getProducts() {
+  let category = $("#categoryFilter").val();
+  let sort = $("#sort").val();
+  console.log(sort + " sort");
+  $.ajax({
+    url: "/products/" + category,
+    method: "get",
+    data: {
+      sort: sort,
+    },
+    success: (response) => {
+      console.log("response got");
+      // if (response.status) {
+      //   console.log('response true');
+      if (category == "All") {
+        location.href = "/products";
+      } else if (category == "vegan") {
+        location.href = "products/vegan";
+      } else {
+        location.href = "/products/" + category;
+      }
+      // }
+    },
+  });
+}
+//cart page quantity changing time amount also changed
+function getPrice(proId, proprice, cartprice, wt) {
+  let qty = $("#qtyOf" + proId).text();
+
+  $.ajax({
+    url: "/cart/change-weight",
+    data: {
+      proId: proId,
+      proprice: proprice,
+      cartprice,
+      cartprice,
+      wt: wt,
+      qty: qty,
+    },
+    method: "post",
+    success: (response) => {
+      if (response.status) {
+        location.reload();
+      }
+    },
+  });
+}
+
+function changeQuantity(proId, wt, price, count) {
+  let qty = $("#qtyOf" + proId).text();
+
+  $.ajax({
+    url: "/cart/change-quantity",
+    data: {
+      proId: proId,
+      wt: wt,
+      price: price,
+      count: count,
+      qty: parseInt(qty),
+    },
+    method: "post",
+    success: (response) => {
+      // if(response.status){
+      console.log(response);
+
+      location.reload();
+    },
+  });
+}
+//click cross button from cart page,delete from cart
+function removeFromCart(proId, wt) {
+  $.ajax({
+    url: "/cart/delete/" + proId + "/" + wt,
+    method: "get",
+    success: (response) => {
+      if (response.status) {
+        location.reload();
+      }
+    },
+  });
+}
+
+function addAddress() {
+  $("#add-address").toggleClass("hide");
+}
+
+function selectAddress(addressIndex) {
+  $.ajax({
+    url: "/cart/place-order/select-address",
+    method: "post",
+    data: {
+      addressIndex: addressIndex,
+    },
+    success: (response) => {
+      if (response.status) {
+        location.reload();
+        console.log(response);
+      }
+    },
+  });
+}
+
+$("#payment-form").validate({
+  errorClass: "error fail-alert",
+  rules: {
+    payment: {
+      required: true,
+    },
+  },
+  messges: {
+    payment: {
+      required: "Select payment method",
+    },
+  },
+  errorPlacement: function (error, element) {
+    if (element.is(":radio")) {
+      error.insertBefore($(element).parents(".pay-form"));
+    } else {
+      // This is the default behavior
+      error.insertAfter(element);
     }
-    if (match[0] === e.value) {
-      $.ajax({
-        url: "/search",
-        method: "post",
-        data: {
-          payload: e.value,
-        },
-        success: (response) => {
-          let payload = response.payload;
-          searchResults.style.display = "block";
-          searchResults.html = "";
-          if (payload.length < 1) {
-            searchResults.innerHTML = "No Product";
-            return;
-          }
-          payload.forEach((element, index) => {
-            if (index > 0) searchResults.innerHTML = "<hr>";
-            searchResults.innerHTML += `<div><a href="/products/product-details/${element._id}"><p class='h3'>${element.title}</p> <img width='50px' src='/public/images/product-img/${element.image}'> </a></div> <br>`;
-          });
-        },
-      });
-      return;
-    }
+  },
+});
+
+function verifyPayment(payment, order) {
+  $.ajax({
+    url: "/cart/verify-payment",
+    data: {
+      payment,
+      order,
+    },
+    method: "post",
+    success: (response) => {
+      if (response.status) {
+        location.href = "/cart/place-order/success";
+      }
+    },
+  });
+}
+
+$("#payment-form").submit((e) => {
+  e.preventDefault();
+  $.ajax({
+    url: "/cart/payment",
+    method: "post",
+    data: $("#payment-form").serialize(),
+    success: (response) => {
+      // alert(response)
+      if (response.codStatus == "placed") {
+        console.log(response);
+        console.log(response.status);
+
+        location.href = "/cart/place-order/success";
+      } else {
+        console.log(response + "response");
+        razorpayPayment(response);
+      }
+    },
+  });
+});
+
+//get categorywise filter 
+
+function getProducts() {
+  let category = $("#categoryFilter").val();
+  let sort = $("#sort").val();
+  console.log(sort + " sort");
+  $.ajax({
+    url: "/products/" + category,
+    method: "get",
+    data: {
+      sort: sort,
+    },
+    success: (response) => {
+      console.log("response got");
+      // if (response.status) {
+      //   console.log('response true');
+      if (category == "All") {
+        location.href = "/products";
+      } else if (category == "vegan") {
+        location.href = "products/vegan";
+      } else {
+        location.href = "/products/" + category;
+      }
+      // }
+    },
+  });
+}
+
+//fiter products
+function sendData(e) {
+  const searchResults = document.getElementById("search-results");
+  let match = e.value.match(/^[a-zA-Z ]*/);
+  let match2 = e.value.match(/\s*/);
+  if (match2[0] === e.value) {
     searchResults.innerHTML = "";
+    return;
   }
-  
-  function copyToClipboard(id) {
-    let text = document.getElementById("copy-code-" + id);
-    let copyText = document.getElementById(id).innerText;
-    navigator.clipboard.writeText(copyText);
-    text.innerText = "copied";
-    // window.location.reload();
+  if (match[0] === e.value) {
+    $.ajax({
+      url: "/search",
+      method: "post",
+      data: {
+        payload: e.value,
+      },
+      success: (response) => {
+        let payload = response.payload;
+        searchResults.style.display = "block";
+        searchResults.html = "";
+        if (payload.length < 1) {
+          searchResults.innerHTML = "No Product";
+          return;
+        }
+        payload.forEach((element, index) => {
+          if (index > 0) searchResults.innerHTML = "<hr>";
+          searchResults.innerHTML += `<div><a href="/products/product-details/${element._id}"><p class='h3'>${element.title}</p> <img width='50px' src='/public/images/product-img/${element.image}'> </a></div> <br>`;
+        });
+      },
+    });
+    return;
   }
-  
-  function change_image(image) {
-    var container = document.getElementById("main-image");
-  
-    container.src = image.src;
+  searchResults.innerHTML = "";
+}
+
+function cancelOrder(id) {
+  $.ajax({
+    url: "/orders/order-cancel/" + id,
+    method: "get",
+    success: (response) => {
+      if (response.status) {
+        location.reload();
+      }
+    },
+  });
+}
+
+
+//for img
+
+function readURL(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      $("#img-prvw").attr("src", e.target.result).width(100).height(100);
+    };
+    reader.readAsDataURL(input.files[0]);
   }
+}
+
+$("#image").change(function () {
+  readURL(this);
+});
+$("#coupon-form").validate({
+  errorClass: "error fail-alert",
+
+  rules: {
+    coupon: {
+      required: true,
+    },
+  },
+  messages: {
+    coupon: {
+      required: "Please enter your coupon name.",
+    },
+  },
+
+  submitHandler: function applyCoupon(form) {
+    $.ajax({
+      url: form.action,
+      method: form.method,
+      data: $(form).serialize(),
+      success: (response) => {
+        location.reload();
+      },
+    });
+  },
+});
+
+//for coupon apply
+function copyToClipboard(id) {
+  let text = document.getElementById("copy-code-" + id);
+  let copyText = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(copyText);
+  text.innerText = "copied";
+  // window.location.reload();
+}
+
+function change_image(image) {
+  var container = document.getElementById("main-image");
+
+  container.src = image.src;
+}
+
+
+// function changeStatus(id) {
+//   let status = $("#update-order-status").val();
+//   $.ajax({
+//     url: "/admin/orders/change-status/" + id,
+//     method: "post",
+//     data: {
+//       status,
+//     },
+//     success: (response) => {
+//       console.log("response got");
+//       if (response.status) {
+//         console.log("response true");
+//         location.reload();
+//       }
+//     },
+//   });
+// }
+// $(".alert-danger").fadeOut(5000);
+// $(".alert-success").fadeOut(5000);
+
+// function changeStatus(id) {
+//   const orderId = id.dataset.orderId;
+//   const newStatus = id.value;
+
+//   $.ajax({
+//       type: "POST",
+//       url: `/change-status/${orderId}`,
+//       data: { status: newStatus },
+//       success: function(response) {
+//           // Handle success, you can update the UI if needed.
+//           if (response.status === true) {
+//               console.log("Status changed successfully");
+//           } else {
+//               console.error("Status change failed");
+//           }
+//       },
+//       error: function(error) {
+//           console.error("An error occurred while changing status");
+//       }
+//   });
+// }
+// function changeStatus(id) {
+//   let status = $("#update-order-status").val();
+//   $.ajax({
+//     url: "/admin/orders/change-status/" + id,
+//     method: "post",
+//     data: {
+//       status,
+//     },
+//     success: (response) => {
+//       console.log("response got");
+//       if (response.status) {
+//         console.log("response true");
+//         // Store the updated status in local storage
+//         localStorage.setItem('updatedStatus', status);
+//         location.reload();
+//       }
+//     },
+//   });
+// }
+
+// // On page load, check if there's an updated status in local storage and use it
+// $(document).ready(function() {
+//   const updatedStatus = localStorage.getItem('updatedStatus');
+//   if (updatedStatus) {
+//     // Update the status on the page
+//     $("#update-order-status").val(updatedStatus);
+//   }
+// });
+function changeStatus(orderId) {
+  const newStatus = $("#status-" + orderId).val(); // Assuming you have select elements with unique IDs for each order
+
+  $.ajax({
+    url: `/admin/orders/change-status/${orderId}`,
+    method: "POST",
+    data: {
+      status: newStatus,
+    },
+    success: (response) => {
+      if (response.status) {
+        // Update the status text on the page
+        $(`#status-text-${orderId}`).text(newStatus);
+      }
+    },
+    error: (error) => {
+      console.error("An error occurred while changing status");
+    },
+  });
+}
+
+
+    {/* // Function to initialize the image zoom effect */}
+
+  //   window.onload = function () {
+  //     initImageZoom();
+  // };
+
+  //   function initImageZoom() {
+  //       var mainImage = document.getElementById('myimage');
+        
+  //       var glass = document.createElement('div');
+  //       glass.setAttribute('class', 'img-magnifier-glass');
+
+  //       mainImage.parentElement.insertBefore(glass, mainImage);
+
+  //       glass.addEventListener('mousemove', function (e) {
+  //           moveMagnifier(e);
+  //       });
+  //       console.log(moveMagnifier,"move")
+
+  //       mainImage.addEventListener('mousemove', function (e) {
+  //           moveMagnifier(e);
+  //       });
+
+  //       glass.addEventListener('mouseout', function () {
+  //           glass.style.display = 'none';
+  //       });
+
+  //       function moveMagnifier(e) {
+  //           var pos, x, y;
+  //           e.preventDefault();
+
+  //           pos = getCursorPos(e);
+  //           x = pos.x - (glass.offsetWidth / 2);
+  //           y = pos.y - (glass.offsetHeight / 2);
+
+  //           if (x < 0) x = 0;
+  //           if (x > mainImage.width - glass.offsetWidth) x = mainImage.width - glass.offsetWidth;
+  //           if (y < 0) y = 0;
+  //           if (y > mainImage.height - glass.offsetHeight) y = mainImage.height - glass.offsetHeight;
+
+  //           glass.style.left = x + 'px';
+  //           glass.style.top = y + 'px';
+
+  //           glass.style.backgroundPosition = '-' + (x * 3) + 'px -' + (y * 3) + 'px';
+  //       }
+
+  //       function getCursorPos(e) {
+  //           var a, x = 0, y = 0;
+  //           e = e || window.event;
+  //           a = mainImage.getBoundingClientRect();
+
+  //           x = e.pageX - a.left;
+  //           y = e.pageY - a.top;
+
+  //           x = x - window.pageXOffset;
+  //           y = y - window.pageYOffset;
+
+  //           return { x: x, y: y };
+  //       }
+  //   }
+
+    
+   {/* // Function to initialize the image zoom effect */} 
+  function magnify(imgID, zoom) {
+    var img, glass, w, h, bw;
+    img = document.getElementById(imgID);
+
+    /* Create magnifier glass: */
+    glass = document.createElement("DIV");
+    glass.setAttribute("class", "img-magnifier-glass");
+
+    /* Insert magnifier glass: */
+    img.parentElement.insertBefore(glass, img);
+
+    /* Set background properties for the magnifier glass: */
+    glass.style.backgroundImage = "url('" + img.src + "')";
+    glass.style.backgroundRepeat = "no-repeat";
+    glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
+    bw = 3;
+    w = glass.offsetWidth / 2;
+    h = glass.offsetHeight / 2;
+
+    /* Execute a function when someone moves the magnifier glass over the image: */
+    glass.addEventListener("mousemove", moveMagnifier);
+    img.addEventListener("mousemove", moveMagnifier);
+
+    /* And also for touch screens: */
+    glass.addEventListener("touchmove", moveMagnifier);
+    img.addEventListener("touchmove", moveMagnifier);
+
+    function moveMagnifier(e) {
+        var pos, x, y;
+        /* Prevent any other actions that may occur when moving over the image */
+        e.preventDefault();
+        /* Get the cursor's x and y positions: */
+        pos = getCursorPos(e);
+        x = pos.x;
+        y = pos.y;
+        /* Prevent the magnifier glass from being positioned outside the image: */
+        if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
+        if (x < w / zoom) {x = w / zoom;}
+        if (y > img.height - (h / zoom)) {y = img.height - (h / zoom);}
+        if (y < h / zoom) {y = h / zoom;}
+        /* Set the position of the magnifier glass: */
+        glass.style.left = (x - w) + "px";
+        glass.style.top = (y - h) + "px";
+        /* Display what the magnifier glass "sees": */
+        glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
+    }
+
+    function getCursorPos(e) {
+        var a, x = 0, y = 0;
+        e = e || window.event;
+        /* Get the x and y positions of the image: */
+        a = img.getBoundingClientRect();
+        /* Calculate the cursor's x and y coordinates, relative to the image: */
+        x = e.pageX - a.left;
+        y = e.pageY - a.top;
+        /* Consider any page scrolling: */
+        x = x - window.pageXOffset;
+        y = y - window.pageYOffset;
+        return {x: x, y: y};
+    }
+}
+
+// const galleryImages = document.querySelectorAll('.gallery-image');
+//     galleryImages.forEach((img) => {
+//         img.addEventListener('click', () => {
+//             // You can implement logic to display the clicked image in a modal or a separate page here
+//             // For example, open a modal and set the modal's content to the clicked image
+//         });
+//     });
+
+// function changeProductImage(imageUrl) {
+//   // Get the main product image element
+//   var mainImage = document.getElementById('img-prvw');
+
+//   // Set the source of the main image to the clicked gallery image
+//   mainImage.src = imageUrl;
+// }
+
+function changeImage(newImageUrl) {
+  // Get the main product image element by ID
+  var mainImage = document.getElementById('myimage');
   
-  document.addEventListener("DOMContentLoaded", function (event) {});
+  // Set the source of the main image to the clicked thumbnail image URL
+  mainImage.src = newImageUrl;
+}

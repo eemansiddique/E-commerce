@@ -1,4 +1,4 @@
-<%- include('../layouts/user-header.ejs') %>
+<%- include('../layouts/login-header.ejs') %>
 
 <!-- <section class="heading">
     <h1>account</h1>
@@ -10,7 +10,7 @@
 
 <section class="login-form">
   
-    <form id="user-login-form" action="/api/v1/users/login" method="post">
+    <form id="user-login-form" action="/login" method="post">
       <% success.forEach(function(msg){ %>
         <div class="alert alert-success" role="alert">
             <%= msg %>

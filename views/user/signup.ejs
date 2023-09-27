@@ -1,9 +1,9 @@
-<%- include('../layouts/user-header.ejs') %>
+<%- include('../layouts/register-header.ejs') %>
 
 <section class="register-form">
 
   
-    <form id="user-signup-form" method="post" action="/api/v1/users/register" >
+    <form id="user-signup-form" method="post" action="/register" >
 
         <% success.forEach(function(msg){ %>
             <div class="alert alert-success" role="alert">

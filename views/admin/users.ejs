@@ -28,22 +28,22 @@
                 <td><%= user.name %></td>
                 <td><%= user.email %></td>
                 <td><%= user.contact %></td>
-                <!-- <td>
+                <td>
                     <% if (user.image == ""){%>
                         <img width="80px" height="80px" src="/public/images/no-image.jpg" alt="no-image">
                         <%}else{%>
                          <img width="80px" height="80px" src="/public/images/user-img/<%= user.image %>" alt="<%=user.name%> img">
                          <%}%>                
-                </td> -->
+                </td>
                 <td><%= user.verified %></td>
-                <!-- <td>
+                <td>
                     <% if (!user.status){%>
 
                     <a class="me-2 text-danger" href="/admin/users/block/<%= user._id %>">Block</a>
                     <%}else{%>
                         <a class="text-dark" href="/admin/users/unblock/<%= user._id %>"> Unblock</a>
                         <%}%>                    
-                </td> -->
+                </td>
             </tr>
             <% }); %>
         

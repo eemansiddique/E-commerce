@@ -1819,3 +1819,37 @@ label.error.fail-alert {
 .image-responsive {
   width: 100%;
 }
+
+
+/* zoom image styles */
+/* Styles for the magnifier container */
+.img-magnifier-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* Styles for the magnifier glass */
+.img-magnifier-glass {
+  position: absolute;
+  border: 1px solid #000; /* Magnifier glass border color */
+  border-radius: 50%; /* Makes it circular */
+  cursor: crosshair; /* Cursor style on hover */
+  pointer-events: none; /* Allow interaction with underlying image */
+  user-select: none; /* Prevent text selection */
+  width: 200px; /* Adjust the width of the magnifier glass */
+  height: 200px; /* Adjust the height of the magnifier glass */
+  background-size: 350px 350px; /* Adjust based on the main image size */
+  background-repeat: no-repeat;
+  display: none; /* Hide the magnifier glass by default */
+}
+
+/* Styles for the thumbnail images (optional) */
+.thumbnail img {
+  margin-right: 5px; /* Adjust the spacing between thumbnail images */
+  cursor: pointer; /* Show pointer cursor on thumbnail images */
+}
+
+/* Show the magnifier glass when hovering over the main image */
+.img-magnifier-container:hover .img-magnifier-glass {
+  display: block;
+}

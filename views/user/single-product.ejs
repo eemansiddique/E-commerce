@@ -1,0 +1,248 @@
+<%- include('../layouts/user-header') %>
+
+
+
+
+
+<div class="container mt-5 mb-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-12 ">
+            <div class="card">
+                <div class="row">
+                    <div class="col-md-7 col-lg-5">
+                        <div class="images container p-3">
+                            <div class="text-center "> 
+                                <div class="img-magnifier-container">
+                                    <img id="myimage" src="/public/images/product-img/<%= product.image %>" width="350" alt="Main Product Image" onmouseover="magnify('myimage', 2)">
+                                </div>
+                                <!-- <img class="image-responsive" id="main-image" src="/public/images/product-img/<%=product.image%>" width="350"  />  -->
+                            </div>
+                            <div class="thumbnail text-center pt-3">
+                                <%images.forEach(function(img){%>
+                                 <!-- <img onclick="change_image(this)" src="/public/images/product-img/<%=img%>" width="70"> -->
+                                 <img onclick="changeImage('/public/images/product-img/<%= img %>')" src="/public/images/product-img/<%= img %>" width="70">
+
+                               
+                                <%})%>
+                            
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5 col-lg-5">
+                        <div class="product p-4">
+                            <!-- <div class="d-flex justify-content-between align-items-center"> -->
+                                <!-- <div class="d-flex align-items-center"> <i class="fa fa-long-arrow-left"></i> <span class="ml-1">Back</span> </div> <i class="fa fa-shopping-cart text-muted"></i> -->
+                            <!-- </div> -->
+                            <div class="mt-4 mb-3">
+                                 <!-- <span class="text-uppercase text-muted brand">Orianz</span> -->
+                                <h2 class=""><%= product.title%></h2>
+                                <div class="price d-flex flex-row align-items-center"> <span class="act-price">₹<%= product.price%></span>
+                                    <!-- <div class="ml-2"> <small class="dis-price">$59</small> <span>40% OFF</span> </div> -->
+                                </div>
+                            </div>
+                            <p class="about"><%= product.description%></p>
+                           
+                            <!-- <div class="sizes mt-5">
+                                <h6 class="text-uppercase">Size</h6> <label class="radio"> <input type="radio" name="size" value="S" checked> <span>S</span> </label> <label class="radio"> <input type="radio" name="size" value="M"> <span>M</span> </label> <label class="radio"> <input type="radio" name="size" value="L"> <span>L</span> </label> <label class="radio"> <input type="radio" name="size" value="XL"> <span>XL</span> </label> <label class="radio"> <input type="radio" name="size" value="XXL"> <span>XXL</span> </label>
+                            </div> -->
+                            <div class="cart mt-4 align-items-center"> <button onclick="addToCart('<%=product._id%>')" class="btn text-uppercase mr-2">Add to cart</button> <button onclick="addToWishlist('<%=product._id%>')" class="btn"><i class="fa fa-heart text-light"></i></button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+<div class="super_container">
+   
+    <div class="single_product">
+        <div class="container-fluid" style=" background-color: #ffffff;">
+            <div class="row"style=" ">
+                <div class="col-lg-2 order-lg-1 order-2">
+                    <ul class="image_list">
+                        <%images.forEach(function(img){%>
+                        <li >
+                            <img src="/public/images/product-img/<%=img%>"  alt="">
+                            </a>
+                        </li>
+
+                        <%})%>
+                    </ul>
+                </div>
+                <div class="col-lg-4 order-lg-2 order-1">
+                    <div class="image_selected"><img src="/public/images/product-img/<%=product.image%>" alt=""></div>
+                </div>
+                <div class="col-lg-5 order-3">
+                    <div class="product_description">
+                     
+                        <div class="product_name"><%= product.title%></div>
+                        <div> <span class="product_price"><%= product.price%></span> <strike class="product_discount"> <span>₹ 2,000<span> </strike> </div>
+                        <div> <span class="product_saved">You Saved:</span> <span style='color:black'> 2,000<span> </div>
+                        <hr class="singleline">
+                        <div> <span class="product_info"> <%= product.description%></div>
+                       
+                        <hr class="singleline">
+                        <div class="order_info d-flex flex-row">
+                        </div>
+                        <div class="row">
+                           
+                            <div class="col-xs-6"> 
+                                <button onclick="addToCart('<%=product._id%>')" type="button" class="btn me-5">Add to Cart</button>
+                                 <button onclick="addToWishlist('<%=product._id%>')" type="button" class="btn">Add to Wishlist</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           
+        </div>
+    </div>
+</div> -->
+
+<!-- <script>
+    // Function to initialize the image zoom effect
+    function initImageZoom() {
+        var mainImage = document.getElementById('myimage');
+        var glass = document.createElement('div');
+        glass.setAttribute('class', 'img-magnifier-glass');
+
+        mainImage.parentElement.insertBefore(glass, mainImage);
+
+        glass.addEventListener('mousemove', function (e) {
+            moveMagnifier(e);
+        });
+
+        mainImage.addEventListener('mousemove', function (e) {
+            moveMagnifier(e);
+        });
+
+        glass.addEventListener('mouseout', function () {
+            glass.style.display = 'none';
+        });
+
+        function moveMagnifier(e) {
+            var pos, x, y;
+            e.preventDefault();
+
+            pos = getCursorPos(e);
+            x = pos.x - (glass.offsetWidth / 2);
+            y = pos.y - (glass.offsetHeight / 2);
+
+            if (x < 0) x = 0;
+            if (x > mainImage.width - glass.offsetWidth) x = mainImage.width - glass.offsetWidth;
+            if (y < 0) y = 0;
+            if (y > mainImage.height - glass.offsetHeight) y = mainImage.height - glass.offsetHeight;
+
+            glass.style.left = x + 'px';
+            glass.style.top = y + 'px';
+
+            glass.style.backgroundPosition = '-' + (x * 3) + 'px -' + (y * 3) + 'px';
+        }
+
+        function getCursorPos(e) {
+            var a, x = 0, y = 0;
+            e = e || window.event;
+            a = mainImage.getBoundingClientRect();
+
+            x = e.pageX - a.left;
+            y = e.pageY - a.top;
+
+            x = x - window.pageXOffset;
+            y = y - window.pageYOffset;
+
+            return { x: x, y: y };
+        }
+    }
+
+    // Initialize the image zoom effect when the page loads
+    window.onload = function () {
+        initImageZoom();
+    };
+</script>-->
+
+<!-- <script>
+function magnify(imgID, zoom) {
+	var img, glass, w, h, bw;
+	img = document.getElementById(imgID);
+  
+	/* Create magnifier glass: */
+	glass = document.createElement("DIV");
+	glass.setAttribute("class", "img-magnifier-glass");
+  
+	/* Insert magnifier glass: */
+	img.parentElement.insertBefore(glass, img);
+  
+	/* Set background properties for the magnifier glass: */
+	glass.style.backgroundImage = "url('" + img.src + "')";
+	glass.style.backgroundRepeat = "no-repeat";
+	glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
+	bw = 3;
+	w = glass.offsetWidth / 2;
+	h = glass.offsetHeight / 2;
+  
+	/* Execute a function when someone moves the magnifier glass over the image: */
+	glass.addEventListener("mousemove", moveMagnifier);
+	img.addEventListener("mousemove", moveMagnifier);
+  
+	/* Execute a function when the mouse pointer leaves the image: */
+    img.addEventListener("mouseleave", function () {
+        glass.style.display = "none";
+    });
+
+	/* Execute a function when the mouse pointer enters the image: */
+    img.addEventListener("mouseenter", function () {
+        glass.style.display = "block";
+    });
+
+	/*and also for touch screens:*/
+	glass.addEventListener("touchmove", moveMagnifier);
+	img.addEventListener("touchmove", moveMagnifier);
+	function moveMagnifier(e) {
+	  var pos, x, y;
+	  /* Prevent any other actions that may occur when moving over the image */
+	  e.preventDefault();
+	  /* Get the cursor's x and y positions: */
+	  pos = getCursorPos(e);
+	  x = pos.x;
+	  y = pos.y;
+	  /* Prevent the magnifier glass from being positioned outside the image: */
+	  if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
+	  if (x < w / zoom) {x = w / zoom;}
+	  if (y > img.height - (h / zoom)) {y = img.height - (h / zoom);}
+	  if (y < h / zoom) {y = h / zoom;}
+	  /* Set the position of the magnifier glass: */
+	  glass.style.left = (x - w) + "px";
+	  glass.style.top = (y - h) + "px";
+	  /* Display what the magnifier glass "sees": */
+	  glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
+	}
+  
+	function getCursorPos(e) {
+	  var a, x = 0, y = 0;
+	  e = e || window.event;
+	  /* Get the x and y positions of the image: */
+	  a = img.getBoundingClientRect();
+	  /* Calculate the cursor's x and y coordinates, relative to the image: */
+	  x = e.pageX - a.left;
+	  y = e.pageY - a.top;
+	  /* Consider any page scrolling: */
+	  x = x - window.pageXOffset;
+	  y = y - window.pageYOffset;
+	  return {x : x, y : y};
+	}
+  }
+</script> -->
+
+<%- include('../layouts/user-footer.ejs') %> 
