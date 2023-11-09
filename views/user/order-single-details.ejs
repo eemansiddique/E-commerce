@@ -219,8 +219,45 @@
                         <td><% let d_date = order.deliveryDate.split(" ") %>
                             <%= d_date[0]+ " " + d_date[1] +" "+ d_date[2] +" "+ d_date[3] %></td>
                     </tr>
+                    <!-- <tr>
+                        <th>
+                            Delivery Address
+                        </th>
+                        <td>:</td>
+                        <td>
+                            Name: <%= order.address.name %> <br>
+                            House Name: <%= order.address.housename %> <br>
+                            Street: <%= order.address.street %> <br>
+                            Landmark: <%= order.address.landmark %> <br>
+                            Pin: <%= order.address.pin %> <br>
+                            District: <%= order.address.district %> <br>
+                            State: <%= order.address.state %> <br>
+                            Country: <%= order.address.country %> <br>
+                            Contact: <%= order.address.contact %> <br>
+                        </td>
+                    </tr> -->
                 </tbody>
+                
             </table>
+            <table class="h5">
+                <tbody>
+            <tr>
+                <th >Delivery Address</th>
+                <td>:</td>
+                <td>
+                    Name: <%= order.address.name %> <br>
+                    House Name: <%= order.address.housename %> <br>
+                    Street: <%= order.address.street %> <br>
+                    Landmark: <%= order.address.landmark %> <br>
+                    Pin: <%= order.address.pin %> <br>
+                    District: <%= order.address.district %> <br>
+                    State: <%= order.address.state %> <br>
+                    Country: <%= order.address.country %> <br>
+                    Contact: <%= order.address.contact %> <br>
+                </td>
+            </tr>
+        </tbody> 
+        </table>
             <table class="h3">
                 <tbody>
                     <tr>
@@ -228,7 +265,7 @@
                             Discount
                         </th>
                         <td>:</td>
-                        <td><%=order.discount%>.00</td>
+                        <td><%= order.discount ? order.discount + '.00' : '0.00' %></td>
                     </tr>
                     <tr>
                         <th>
@@ -246,6 +283,7 @@
                     </tr>
                 </tbody>
             </table>
+            
         </div>
            
         </div>

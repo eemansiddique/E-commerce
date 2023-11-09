@@ -8,44 +8,49 @@ const auth = require('../config/auth');
 
 
 
+
 wishlistRouter.get('/', auth.isUser, async (req, res) => {
     try {
         let user = req.session.user;
+        if (!user) {
+            // Handle the case where the user is not logged in
+            res.status(403).send('Unauthorized'); // You can customize the error response
+            return;
+        }
+        
         req.session.user.discount = null;
 
         let id = user._id;
+        
+        if (!id) {
+            // Handle the case where the user's ID is missing
+            res.status(500).send('User ID is missing'); // You can customize the error response
+            return;
+        }
+
         let list = await Wishlist.findOne({ userId: id }).populate("wishlist.product");
-        let wishcount = null;
-        let count = null;
+        let wishcount = 0; // Initialize wishcount to 0
+        let count = 0; // Initialize count to 0
 
-        if (user) {
+        if (list) {
             const cartItems = await Cart.findOne({ userId: user._id });
-
             if (cartItems) {
                 count = cartItems.cart.length;
             }
+
+            wishcount = list.wishlist.filter(w => w.product !== null).length;
         }
+        
+        console.log("list", list);
+        console.log("wishcount", wishcount);
 
-        if (user) {
-            const wishlistItems = await Wishlist.findOne({ userId: user._id });
-
-            if (wishlistItems) {
-                wishcount = wishlistItems.wishlist.length;
-            }
-        }
-        console.log("list",list)
-        console.log("wishcount",wishcount)
-        const filteredWishlist = list.wishlist.filter(w => w.product !== null);
-
-        res.render('user/wishlist', { list: { ...list, wishlist: filteredWishlist }, user, wishcount, count });
-       
-        // res.render('user/wishlist', { list, user, wishcount, count });
+        res.render('user/wishlist', { list, user, wishcount, count });
     } catch (error) {
         // Handle errors here
         console.error('Error in wishlist route:', error);
         res.status(500).send('Internal Server Error'); // You can customize the error response
     }
-})
+});
 wishlistRouter.get('/add/:product', async (req, res) => {
 
     let productid = req.params.product;

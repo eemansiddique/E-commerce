@@ -197,6 +197,7 @@
                                                         <div class="form-group">
                                                             <input type="text" class="box" name="name"
                                                                 placeholder="name">
+                                                                <span class="error" id="name-error"></span>
                                                         </div>
                                                         <div class="form-group">
                                                             <input type="text" class="box" name="housename"
@@ -324,3 +325,28 @@
 
                     </div>
                 </div> -->
+
+
+                <script>
+                    document.getElementById("add-address").addEventListener("submit", function(event) {
+                        var nameInput = document.querySelector('input[name="name"]');
+                        var contactInput = document.querySelector('input[name="contact"]');
+                
+                        // Clear any previous error messages
+                        document.getElementById("name-error").textContent = "";
+                        document.getElementById("contact-error").textContent = "";
+                
+                        // Validate name (characters only)
+                        var namePattern = /^[A-Za-z\s]+$/;
+                        if (!namePattern.test(nameInput.value)) {
+                            document.getElementById("name-error").textContent = "Name should contain only characters.";
+                            event.preventDefault(); // Prevent form submission
+                        }
+                
+                        // Validate contact (not negative)
+                        if (contactInput.value < 0) {
+                            document.getElementById("contact-error").textContent = "Contact cannot be negative.";
+                            event.preventDefault(); // Prevent form submission
+                        }
+                    });
+                </script>

@@ -11,7 +11,10 @@ const orderSchema = new mongoose.Schema({
         discount: Number,
         date : String,
         status : String,
-        deliveryDate : String
+        deliveryDate : String,
+        paymentId: String,
+        signature: String,
+        orderId:String,
     // }]
 }); 
 const Order = mongoose.model('Order', orderSchema);

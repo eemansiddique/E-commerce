@@ -453,7 +453,9 @@ function getPrice(proId, proprice, cartprice, wt) {
     success: (response) => {
       if (response.status) {
         location.reload();
+        
       }
+      
     },
   });
 }
@@ -704,47 +706,8 @@ function change_image(image) {
 }
 
 
-// function changeStatus(id) {
-//   let status = $("#update-order-status").val();
-//   $.ajax({
-//     url: "/admin/orders/change-status/" + id,
-//     method: "post",
-//     data: {
-//       status,
-//     },
-//     success: (response) => {
-//       console.log("response got");
-//       if (response.status) {
-//         console.log("response true");
-//         location.reload();
-//       }
-//     },
-//   });
-// }
-// $(".alert-danger").fadeOut(5000);
-// $(".alert-success").fadeOut(5000);
 
-// function changeStatus(id) {
-//   const orderId = id.dataset.orderId;
-//   const newStatus = id.value;
 
-//   $.ajax({
-//       type: "POST",
-//       url: `/change-status/${orderId}`,
-//       data: { status: newStatus },
-//       success: function(response) {
-//           // Handle success, you can update the UI if needed.
-//           if (response.status === true) {
-//               console.log("Status changed successfully");
-//           } else {
-//               console.error("Status change failed");
-//           }
-//       },
-//       error: function(error) {
-//           console.error("An error occurred while changing status");
-//       }
-//   });
-// }
 // function changeStatus(id) {
 //   let status = $("#update-order-status").val();
 //   $.ajax({
@@ -773,90 +736,133 @@ function change_image(image) {
 //     $("#update-order-status").val(updatedStatus);
 //   }
 // });
-function changeStatus(orderId) {
-  const newStatus = $("#status-" + orderId).val(); // Assuming you have select elements with unique IDs for each order
+// function changeStatus(orderId) {
+//   const newStatus = $("#status-" + orderId).val(); // Assuming you have select elements with unique IDs for each order
 
+//   $.ajax({
+//     url: `/admin/orders/change-status/${orderId}`,
+//     method: "POST",
+//     data: {
+//       status: newStatus,
+//     },
+//     success: (response) => {
+//       if (response.status) {
+//         // Update the status text on the page
+//         $(`#status-text-${orderId}`).text(newStatus);
+//       }
+//     },
+//     error: (error) => {
+//       console.error("An error occurred while changing status");
+//     },
+//   });
+// }
+// function changeStatus(orderId) {
+//   const newStatus = $("#status-" + orderId).val();
+//   console.log(newStatus,"newStatus")
+// $.ajax({
+//   // ... (your existing code)
+ 
+//         url: `/admin/orders/change-status/${orderId}`,
+//          method: "POST",
+//          data: JSON.stringify({
+//           status: newStatus,
+//         }),
+        
+//   success: (response) => {
+//     if (response.status) {
+//       // Update the status text on the page
+//       $(`#status-text-${orderId}`).text(newStatus);
+     
+//     } else {
+//       console.error("Server returned a non-successful response");
+//     }
+//   },
+ 
+//   error: (error) => {
+//     console.error("An error occurred while changing status:", error);
+//   },
+// });
+// }   
+
+// function changeStatus(orderId) {
+//   console.log("orderId:", orderId); // Debugging line
+//   const newStatus = $("#status-" + orderId).val();
+//   console.log("newStatus:", newStatus); // Debugging line
+
+//   $.ajax({
+//     // ... (your existing code)
+//     url: `/admin/orders/change-status/${orderId}`,
+//     method: "POST",
+//     contentType: "application/json",
+//     data: JSON.stringify({
+//       status: newStatus,
+//     }),
+//     success: (response) => {
+//       if (response.status) {
+//         // Update the status text on the page
+//         $(`#status-text-${orderId}`).text(newStatus);
+//       } else {
+//         console.error("Server returned a non-successful response");
+//       }
+//     },
+//     error: (error) => {
+//       console.error("An error occurred while changing status:", error);
+//     },
+//   });
+// }
+// function changeStatus(orderId) {
+//   // Fetch the newStatus value from the selected option
+//   const newStatus =$("#status-select-" + orderId).val();
+//   console.log(newStatus, "newStatus");
+
+//   // Make an AJAX request to update the status
+//   $.ajax({
+//     url: `/admin/orders/change-status/${orderId}`,
+//     method: "POST",
+//     dataType: "json", // Specify the expected response data type
+//     data: {
+//       status: newStatus,
+//     },
+   
+//     success: (response) => {
+//       console.log(response,"response")
+//       if (response.status) {
+//         // Update the status text on the page
+//         $(`#status-text-${orderId}`).text(response.status);
+//       } else {
+//         console.error("Server returned a non-successful response");
+//       }
+//     },
+//     error: (error) => {
+//       console.error("An error occurred while changing status:", error);
+//     },
+//   });
+// }
+function changeStatus(orderId) {
+  // Fetch the newStatus value from the selected option
+  const newStatus = $("#status-select-" + orderId).val();
+
+  // Make an AJAX request to update the status
   $.ajax({
     url: `/admin/orders/change-status/${orderId}`,
     method: "POST",
     data: {
       status: newStatus,
     },
+    dataType: "json", // Specify the expected response data type
     success: (response) => {
       if (response.status) {
         // Update the status text on the page
         $(`#status-text-${orderId}`).text(newStatus);
+      } else {
+        console.error("Server returned a non-successful response");
       }
     },
     error: (error) => {
-      console.error("An error occurred while changing status");
+      console.error("An error occurred while changing status:", error);
     },
   });
 }
-
-
-    {/* // Function to initialize the image zoom effect */}
-
-  //   window.onload = function () {
-  //     initImageZoom();
-  // };
-
-  //   function initImageZoom() {
-  //       var mainImage = document.getElementById('myimage');
-        
-  //       var glass = document.createElement('div');
-  //       glass.setAttribute('class', 'img-magnifier-glass');
-
-  //       mainImage.parentElement.insertBefore(glass, mainImage);
-
-  //       glass.addEventListener('mousemove', function (e) {
-  //           moveMagnifier(e);
-  //       });
-  //       console.log(moveMagnifier,"move")
-
-  //       mainImage.addEventListener('mousemove', function (e) {
-  //           moveMagnifier(e);
-  //       });
-
-  //       glass.addEventListener('mouseout', function () {
-  //           glass.style.display = 'none';
-  //       });
-
-  //       function moveMagnifier(e) {
-  //           var pos, x, y;
-  //           e.preventDefault();
-
-  //           pos = getCursorPos(e);
-  //           x = pos.x - (glass.offsetWidth / 2);
-  //           y = pos.y - (glass.offsetHeight / 2);
-
-  //           if (x < 0) x = 0;
-  //           if (x > mainImage.width - glass.offsetWidth) x = mainImage.width - glass.offsetWidth;
-  //           if (y < 0) y = 0;
-  //           if (y > mainImage.height - glass.offsetHeight) y = mainImage.height - glass.offsetHeight;
-
-  //           glass.style.left = x + 'px';
-  //           glass.style.top = y + 'px';
-
-  //           glass.style.backgroundPosition = '-' + (x * 3) + 'px -' + (y * 3) + 'px';
-  //       }
-
-  //       function getCursorPos(e) {
-  //           var a, x = 0, y = 0;
-  //           e = e || window.event;
-  //           a = mainImage.getBoundingClientRect();
-
-  //           x = e.pageX - a.left;
-  //           y = e.pageY - a.top;
-
-  //           x = x - window.pageXOffset;
-  //           y = y - window.pageYOffset;
-
-  //           return { x: x, y: y };
-  //       }
-  //   }
-
-    
    {/* // Function to initialize the image zoom effect */} 
   function magnify(imgID, zoom) {
     var img, glass, w, h, bw;
@@ -920,21 +926,6 @@ function changeStatus(orderId) {
     }
 }
 
-// const galleryImages = document.querySelectorAll('.gallery-image');
-//     galleryImages.forEach((img) => {
-//         img.addEventListener('click', () => {
-//             // You can implement logic to display the clicked image in a modal or a separate page here
-//             // For example, open a modal and set the modal's content to the clicked image
-//         });
-//     });
-
-// function changeProductImage(imageUrl) {
-//   // Get the main product image element
-//   var mainImage = document.getElementById('img-prvw');
-
-//   // Set the source of the main image to the clicked gallery image
-//   mainImage.src = imageUrl;
-// }
 
 function changeImage(newImageUrl) {
   // Get the main product image element by ID
@@ -943,3 +934,191 @@ function changeImage(newImageUrl) {
   // Set the source of the main image to the clicked thumbnail image URL
   mainImage.src = newImageUrl;
 }
+
+//razorpay
+// $("#payment-form").submit((e) => {
+//   e.preventDefault();
+//   $.ajax({
+//     url: "/cart/payment",
+//     method: "post",
+//     data: $("#payment-form").serialize(),
+//     success: (response) => {
+//       // alert(response)
+//       if (response.codStatus == "placed") {
+//         console.log(response);
+//         console.log(response.status);
+
+//         location.href = "/cart/place-order/success";
+//       } else {
+//         console.log(response + "response");
+//         razorpayPayment(response);
+//       }
+//     },
+//   });
+// });
+
+function confirmWalletUse(req, res, next) {
+  // Check if the user has confirmed the wallet deduction
+  if (!req.body.confirmWalletUse) {
+    return res.status(400).json({ status: "Wallet deduction not confirmed" });
+  }
+  next(); // Proceed to the next middleware or route
+}
+
+
+
+
+
+
+
+// $("#payment-form").submit((e) => {
+//   e.preventDefault();
+  
+//   // Prompt the user for wallet deduction confirmation
+//   const confirmWalletUse = confirm("Do you want to use your wallet balance for this payment?");
+  
+//   if (!confirmWalletUse) {
+//     alert("Wallet deduction not confirmed.");
+//     return;
+//   }
+
+//   // Proceed with the payment request
+//   $.ajax({
+//     url: "/cart/payment",
+//     method: "post",
+//     data: {
+//       ...$("#payment-form").serializeObject(), // Convert form data to object
+//       confirmWalletUse: true, // Set confirmWalletUse to true if confirmed
+//     },
+//     success: (response) => {
+//       if (response.codStatus == "placed") {
+//         console.log(response);
+//         console.log(response.status);
+//         location.href = "/cart/place-order/success";
+//       } else {
+//         console.log(response + "response");
+//         razorpayPayment(response);
+//       }
+//     },
+//   });
+// });
+
+// // Helper function to serialize form data to an object
+// $.fn.serializeObject = function() {
+//   var formData = {};
+//   var formArray = this.serializeArray();
+//   for (var i = 0, n = formArray.length; i < n; ++i) {
+//     formData[formArray[i].name] = formArray[i].value;
+//   }
+//   return formData;
+// };
+
+$("#payment-form").submit((e) => {
+  e.preventDefault();
+
+  // Check the user's wallet balance
+  const walletBalance = parseFloat($("#wallet-balance").text()); // Assuming you have an element with the user's wallet balance
+
+  if (walletBalance > 0) {
+    // Wallet balance is greater than zero, ask for confirmation
+    const confirmWalletUse = confirm("Do you want to use your wallet balance for this payment?");
+
+    if (confirmWalletUse) {
+      // User confirmed wallet deduction
+      proceedWithPayment(true);
+    } else {
+      // User did not confirm wallet deduction, proceed with normal Razorpay payment
+      proceedWithPayment(false);
+    }
+  } else {
+    // Wallet balance is zero or negative, proceed with normal Razorpay payment
+    proceedWithPayment(false);
+  }
+});
+
+function proceedWithPayment(useWallet) {
+  // Prepare the data to send to the server
+  const requestData = {
+    ...$("#payment-form").serializeObject(), // Convert form data to an object
+    confirmWalletUse: useWallet, // Set confirmWalletUse based on user's choice
+  };
+
+  // Proceed with the payment request
+  $.ajax({
+    url: "/cart/payment",
+    method: "post",
+    data: requestData,
+    success: (response) => {
+      if (response.codStatus == "placed") {
+        console.log(response);
+        console.log(response.status);
+        location.href = "/cart/place-order/success";
+      } else {
+        console.log(response + "response");
+        razorpayPayment(response);
+      }
+    },
+  });
+}
+
+// Helper function to serialize form data to an object
+$.fn.serializeObject = function() {
+  var formData = {};
+  var formArray = this.serializeArray();
+  for (var i = 0, n = formArray.length; i < n; ++i) {
+    formData[formArray[i].name] = formArray[i].value;
+  }
+  return formData;
+};
+
+
+
+function razorpayPayment(order) {
+  var options = {
+    key: "rzp_test_Evbm1KLpExRy2h", // Enter the Key ID generated from the Dashboard
+    amount: order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    currency: "INR",
+    name: "cakes.N.bakes",
+    description: "Test Transaction",
+    image: "https://example.com/your_logo",
+    order_id: order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    handler: function (response) {
+      // alert(response.razorpay_payment_id);
+      // alert(response.razorpay_order_id);
+      // alert(response.razorpay_signature);
+      console.log("verify fn");
+      verifyPayment(response, order);
+    },
+    prefill: {
+      name: "Gaurav Kumar",
+      email: "gaurav.kumar@example.com",
+      contact: "9999999999",
+    },
+    notes: {
+      address: "Razorpay Corporate Office",
+    },
+    theme: {
+      color: "#3399cc",
+    },
+  };
+  var rzp1 = new Razorpay(options);
+  rzp1.open();
+}
+
+
+function verifyPayment(payment, order) {
+  $.ajax({
+    url: "/cart/verify-payment",
+    data: {
+      payment,
+      order,
+    },
+    method: "post",
+    success: (response) => {
+      if (response.status) {
+        location.href = "/cart/place-order/success";
+      }
+    },
+  });
+}
+

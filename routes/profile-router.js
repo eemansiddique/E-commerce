@@ -5,8 +5,12 @@ const User = require('../model/user');
 const Cart = require('../model/cartModel');
 const Wishlist = require('../model/wishlistModel');
 const auth = require('../config/auth');
+const bcrypt=require('bcryptjs');
 
-
+const securePassword = async (password) => {
+  const passwordHash = await bcrypt.hash(password, 10)
+  return passwordHash;
+}
 // const auth = require('../config/auth');
 const multer = require('multer');
 const fs = require('fs');
@@ -252,41 +256,42 @@ profileRouter.get('/delete-address/:index',async(req,res)=>{
 })
 
 
-// profileRouter.post('/change-password',async(req,res)=>{
-//     let user = req.session.user;
-//     console.log(user.password);
-//     let id = user._id;
-//     let {password,npassword}= req.body;
-//     console.log(req.body);
-//     const spassword = await securePassword(password);
-//     console.log(spassword);
 
-//     const snpassword = await securePassword(npassword);
-//     console.log(snpassword);
+profileRouter.post('/change-password', async (req, res) => {
+  // Get the user object from the session
+  const user = req.session.user;
 
-//     const passwordMatch =await bcrypt.compare(spassword, user.password);
-//     console.log(passwordMatch);
+  // Get the current password, new password, and re-typed password from the form
+  const { password, npassword, cpassword } = req.body;
 
-//     if(passwordMatch){
+  try {
+    // Check if the new password matches the re-typed password
+    if (npassword !== cpassword) {
+      req.flash('error', 'New password and re-typed password do not match.');
+      return res.redirect('/profile');
+    }
 
-//          await User.findByIdAndUpdate((id),{$set:{password:snpassword}});
-//         req.flash('success','Your password updated successfully.');
-//         res.redirect('/profile');
-//     }else{
-//         req.flash('error','Current password is wrong!');
-//         res.redirect('/profile');
-//     }
+    // Verify the current password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    
+    if (!passwordMatch) {
+      req.flash('error', 'Current password is incorrect.');
+      return res.redirect('/profile');
+    }
 
+    // Hash the new password
+    const newPasswordHash = await bcrypt.hash(npassword, 10);
 
-// })
+    // Update the user's password in the database
+    await User.findByIdAndUpdate(user._id, { password: newPasswordHash });
 
-
-
-
-
-
-
-
-
+    req.flash('success', 'Your password has been updated successfully.');
+    res.redirect('/profile');
+  } catch (error) {
+    console.error(error);
+    req.flash('error', 'An error occurred while updating your password.');
+    res.redirect('/profile');
+  }
+});
 
 module.exports = profileRouter  ;

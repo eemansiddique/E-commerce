@@ -43,7 +43,7 @@
                     <td><%= order.status %></td>
                     <td>
                         <% if (order.status !== 'cancelled') { %>
-                        <select name="status" class="btn" onchange="changeStatus('<%= order._id %>')">
+                        <select id="status-select-<%= order._id %>" name="status" class="btn" onchange="changeStatus('<%= order._id %>')">
                             <% status.forEach(function(s) { %>
                             <option <% if (status.indexOf(s) < status.indexOf(order.status)) { %> disabled <% } %>  value="<%= s %>" <% if(order.status == s){ %> selected <%}%> > <%= s %></option>
                             <% }) %>

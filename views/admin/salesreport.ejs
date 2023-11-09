@@ -1,0 +1,134 @@
+
+<%- include('../layouts/admin-header.ejs') %>
+
+
+
+<html>
+
+<head>
+    <style>
+        /* Add your CSS styles here */
+    </style>
+</head>
+
+<body>
+    <section class="container">
+        <h3 class="mb-5 text-center fs-1 h3-color mt-5">Sales Report</h3>
+        <br>
+        <button id="generatePDFButton" class="btn btn-block">Generate PDF</button>
+        <button id="generteXlButton" class="btn btn-block">Generate XL</button>
+        <br>
+        <br>
+        <form id="dateRangeForm" class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" class="form-control" id="startDate" name="startDate" style="width: 200px;"
+                        required>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" class="form-control" id="endDate" name="endDate" style="width: 200px;" required>
+                </div>
+            </div>
+            <div class="col-md-3 mt-4">
+                <div class="form-group">
+                    <label for="viewReportButton"></label>
+                    <button type="button" class="btn btn-block" id="viewReportButton">View Report</button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <div id="salesReportResults" class="salesReport"></div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+       document.getElementById("viewReportButton").addEventListener("click", () => {
+            const startDate = document.getElementById("startDate").value;
+            const endDate = document.getElementById("endDate").value;
+            const status = 'delivered';
+
+            fetch("/admin/getOrdersByDate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ startDate, endDate, status }),
+            })
+                .then(response => response.json())
+                .then(data => displaySalesReport(data.result))
+                .catch(error => console.error("There was a problem with the fetch operation:", error));
+        });
+
+        function displaySalesReport(result) {
+            const salesReportResults = document.getElementById("salesReportResults");
+            salesReportResults.innerHTML = ""; // Clear previous results
+
+            if (result.length === 0) {
+                salesReportResults.innerHTML = "<p>No sales data available for the selected date range.</p>";
+            } else {
+                const table = document.createElement("table");
+                table.className = "table";
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                           
+                            <th>Product Name</th>
+                            <th>Ordered At</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${result.map(data => `
+                            <tr>
+                                <td>${data.username}</td>
+                              
+                                <td>${data.productName}</td>
+                                <td>${formatDate(data.date)}</td>
+                                <td>${data.total}</td>
+                                <td>${data.status}</td>
+                            </tr>`).join('')}
+                    </tbody>
+                `;
+
+                salesReportResults.appendChild(table);
+            }
+        }
+
+        document.getElementById("generatePDFButton").addEventListener("click", () => {
+            const pdfContent = document.getElementById("salesReportResults");
+            const pdfOptions = {
+                margin: 1,
+                filename: 'sales_report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            };
+
+            html2pdf().set(pdfOptions).from(pdfContent).save();
+        });
+
+        document.getElementById("generateXLButton").addEventListener("click", () => {
+            const xlContent = document.getElementById("salesReportResults");
+            const ws = XLSX.utils.table_to_sheet(xlContent);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, 'sales_report.xlsx');
+        });
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('en-GB');
+        }
+    </script>
+    
+</body>
+
+</html>
+   <%- include('../layouts/admin-footer.ejs') %>
+    

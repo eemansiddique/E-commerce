@@ -1,10 +1,15 @@
 
 const express=require('express')
+const sharp=require('sharp')
 const productRouter=express.Router();
 const auth = require('../config/auth');
-const fs = require('fs');
+ const fs = require('fs');
 const Product = require('../model/product');
 const Category = require('../model/category');
+// const { cropImage, cropOptions } = require('../public/images/crop-img'); // Adjust the path as needed
+//  const fs = require('fs').promises;
+// const { cropImage, cropOptions}= require('../public/images/crop-img/crop-img.js'); 
+const { cropImage, cropOptions } = require('../public/images/crop-img/crop-img');
 const util = require('util');
 const unlink = util.promisify(fs.unlink);
 
@@ -19,6 +24,8 @@ const storage = multer.diskStorage({
     }
 })
 const upload = multer({ storage: storage })
+
+
 
 
 
@@ -66,12 +73,63 @@ try{
     });
     
    //to add the product
+    // productRouter.post('/add-product', upload.single('image'), async function (req, res) {
+    //     try {
+    //         let { description, price, category, special, vegan } = req.body;
+    //         let title = req.body.title.toUpperCase();
+    //         let slug = req.body.title.toLowerCase();
+    //         let image = req.file ? req.file.filename : '';
+    
+    //         const existingProduct = await Product.findOne({ slug: slug, category: category });
+    
+    //         if (existingProduct) {
+    //             await unlinkAsync('public/images/product-img/' + image);
+    //             req.flash('error', 'Product exists, choose another.');
+    //             return res.redirect('/admin/product/add-product');
+    //         } else {
+    //             let price2 = parseFloat(price).toFixed(2);
+    
+    //             const product = new Product({
+    //                 title: title,
+    //                 slug: slug,
+    //                 description: description,
+    //                 price: price2,
+    //                 category: category,
+    //                 image: image,
+    //                 images: [],
+    //                 special: special,
+    //                 vegan: vegan
+    //             });
+    
+    //             await product.save();
+    
+    //             const products = await Product.find();
+    //             req.app.locals.products = products;
+    //         }
+    
+    //         req.flash('success', 'Product added!');
+    //         res.redirect('/admin/product');
+    //     } catch (err) {
+    //         console.error(err);
+    //         // Handle errors appropriately
+    //     }
+    // });
+
+    //croped image 
     productRouter.post('/add-product', upload.single('image'), async function (req, res) {
         try {
             let { description, price, category, special, vegan } = req.body;
             let title = req.body.title.toUpperCase();
             let slug = req.body.title.toLowerCase();
             let image = req.file ? req.file.filename : '';
+            console.log('Uploaded image filename:', image);
+    
+            // Crop the image if it exists
+            if (image) {
+                const croppedImageFileName = await cropImage(req.file, cropOptions);
+                // Save the cropped image file name to use it in the product creation
+                image = croppedImageFileName;
+            }
     
             const existingProduct = await Product.findOne({ slug: slug, category: category });
     
@@ -158,12 +216,15 @@ try{
     });
 
 
+    
+    //croped image
+
     productRouter.post('/edit-product/:id', upload.single('image'), async (req, res) => {
         try {
             const { title, pimage, description, price, category, special, vegan } = req.body;
             console.log(special, '  ', vegan);
             const slug = title.toLowerCase();
-            const image = req.file ? req.file.filename : "";
+            let image = req.file ? req.file.filename : "";
             const id = req.params.id;
             const price2 = parseFloat(price).toFixed(2);
     
@@ -194,24 +255,28 @@ try{
                 product.description = description;
                 product.price = price2;
                 product.category = category;
-                product.image = img;
-                product.special = special;
-                product.vegan = vegan;
-                
-                await product.save();
-                
-                if (image !== "") {
-                    console.log('image is already there');
-                    
-                    if (product.image !== "") {
-                        console.log('image updated');
-                        
+    
+                // Crop the new image if it exists
+                if (image) {
+                    const croppedImageFileName = await cropImage(req.file, cropOptions);
+                    // Save the cropped image file name to use it in the product update
+                    image = croppedImageFileName;
+    
+                    // Remove the old image if it exists
+                    if (pimage !== "") {
                         fs.unlink('public/images/product-img/' + pimage, (err) => {
                             if (err) console.log(err);
                             console.log('old img deleted');
                         });
                     }
+    
+                    product.image = image;
                 }
+    
+                product.special = special;
+                product.vegan = vegan;
+                
+                await product.save();
                 
                 req.flash('success', 'Product edited successfully.');
                 res.redirect('/admin/product');
@@ -222,87 +287,45 @@ try{
         }
     });
 
-
-    productRouter.get('/delete-product/:id',  async (req, res) => {
+    
+    
+    productRouter.get('/delete-product/:id', async (req, res) => {
         try {
             const pro = await Product.findById(req.params.id);
     
-            // Delete the main product image
-            await fs.promises.unlink('public/images/product-img/' + pro.image);
-            console.log('Main image deleted');
+            // Check if the product exists
+            if (!pro) {
+                req.flash('error', 'Product not found.');
+                return res.redirect('/admin/product');
+            }
     
-            // Delete other images
-            await Promise.all(pro.images.map(async (img) => {
-                await fs.promises.unlink('public/images/product-img/' + img);
-                console.log('Image deleted:', img);
-            }));
+            // Delete the main product image if it exists
+            if (pro.image) {
+                await fs.promises.unlink('public/images/product-img/' + pro.image);
+                console.log('Main image deleted:', pro.image);
+            }
     
+            // Delete other images if they exist
+            if (pro.images && pro.images.length > 0) {
+                await Promise.all(pro.images.map(async (img) => {
+                    await fs.promises.unlink('public/images/product-img/' + img);
+                    console.log('Image deleted:', img);
+                }));
+            }
+    
+            // Delete the product itself
             await Product.deleteOne(pro);
-            
+    
             req.flash('success', 'Product deleted successfully!');
             res.redirect('/admin/product');
         } catch (err) {
             console.error(err);
             // Handle error and respond accordingly
-            res.status(500).send('An error occurred while deleting the product.');
+            req.flash('error', 'An error occurred while deleting the product.');
+            res.redirect('/admin/product');
         }
     });
     
-    
-    // productRouter.post('/edit-product/add-gallery/:id', upload.array('images', 5),async (req, res) => {
-
-    //     let id = req.params.id;
-    //     console.log(id);
-    //     let images = req.files;
-    
-    //     if (images.length > 0) {
-    //         let imageName = images.map((img) => {
-    //             return img.filename;
-    //         })
-    
-    //         await imageName.map((img) => {
-    //             Product.findByIdAndUpdate({ _id: id }, { $push: { images: img } })
-    //                 .then((pro) => {
-    //                     pro.save(() => {
-    //                         console.log('saved');
-    //                     })
-    
-    //                 })
-                    
-    //             })
-    //             req.flash('success', 'gallery added!');
-    //             res.redirect('/admin/product/edit-product/' + id);
-    //     } else {
-    //         res.redirect('/admin/product');
-    //     }
-    
-    // })
-     
-    // productRouter.get('/edit-product/delete-gallery/:id/:img', auth.isAdmin, (req, res) => {
-    //     let id = req.params.id;
-    //     let img = req.params.img;
-    
-    //     Product.findById((id), async (err, pro) => {
-    //         if(err){
-    //             console.log(err)
-    //             return res.redirect('/admin/*');
-    //         }
-    //         pro.images.pull(img);
-    //         await pro.save(() => {
-    //             fs.unlink('public/images/product-img/' + img, (err) => {
-    //                 if (err) console.log(err);
-    //                 console.log('old img deleted');
-    
-    //             })
-    //             res.redirect('/admin/product/edit-product/' + id);
-    //         })
-    
-    //     })
-    // })
-    
-    
-    
-   
 productRouter.post('/edit-product/add-gallery/:id', upload.array('images', 5), async (req, res) => {
     const id = req.params.id;
     const images = req.files;
@@ -341,4 +364,7 @@ productRouter.post('/edit-product/add-gallery/:id', upload.array('images', 5), a
       res.redirect('/admin/*');
     }
   });
+
+
+
 module.exports=productRouter;

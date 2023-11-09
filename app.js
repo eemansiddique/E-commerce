@@ -3,6 +3,7 @@ const mongoose=require("mongoose")
 const app=express();
 const bodyParser=require('body-parser')
 const path = require("path");
+const sharp=require('sharp');
 const flash = require("connect-flash");
 const session = require("express-session");
 const cookie = require("cookie-parser");

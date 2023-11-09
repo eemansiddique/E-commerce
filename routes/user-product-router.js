@@ -113,86 +113,6 @@ userProductRouter.get('/vegan', async (req, res) => {
 });
 
 
-// userProductRouter.get('/product-details/:id',async(req,res)=>{
-//     let id = req.params.id;
-//     try{
-
-//         let product = await Product.findById(id)
-//         let images = product.images;
-//         const user = req.session.user;
-//         console.log(user,"user")
-        
-//         let count =null
-//         // if(user){
-            
-//         //     const cartItems = await Cart.findOne({userId:user._id});
-        
-//         //     if(cartItems){
-//         //         count = cartItems.cart.length;
-//         //     }
-//         // }
-//         let wishcount = null;
-        
-       
-//         // let t = await Cart.findOne({ userId: id }).populate("cart.product");
-//         if (user) {
-//              console.log(user,"user")
-    
-//             const wishlistItems = await Wishlist.findOne({ userId: user._id });
-//             console.log(wishlistItems)
-    
-//             if (wishlistItems) {
-//                 wishcount = wishlistItems.wishlist.length;
-//             }
-//         }
-//         console.log("wish",wishcount)
-//         res.render('user/single-product',{product,images,user,count,wishcount});
-//     }catch(err){
-//         if(err)
-//         res.render('user/404');
-//     }
-// })
-
-// userProductRouter.get('/product-details/:id', async (req, res) => {
-//     try {
-//         let id = req.params.id;
-//         let product = await Product.findById(id);
-//         let images = product.images;
-//         // const imageUrl = '...';
-//         // const imageAlt = '...';
-//         const user = req.session.user;
-//         const imageUrl = '...';
-//         const imageAlt = '...';
-
-//         let count = null;
-
-//         if (user) {
-//             const cartItems = await Cart.findOne({ userId: user._id });
-
-//             if (cartItems) {
-//                 count = cartItems.cart.length;
-//             }
-//         }
-
-//         let wishcount = null;
-
-//         if (user) {
-//             const wishlistItems = await Wishlist.findOne({ userId: user._id });
-
-//             if (wishlistItems) {
-//                 wishcount = wishlistItems.wishlist.length;
-//             }
-//         }
-
-//         console.log("User:", user);
-//         console.log("Wishcount:", wishcount);
-
-//         res.render('user/single-product', { product, images, user, count, wishcount,imageUrl,imageAlt });
-//     } catch (err) {
-//         console.error(err);
-//         res.render('user/404');
-//     }
-// });
 
 userProductRouter.get('/product-details/:id', async (req, res) => {
     try {
@@ -239,25 +159,5 @@ module.exports = userProductRouter;
 
 
 
-
-
-// userProductRouter.get('/',async(req,res)=>{
-//     let products = await Product.find({});
-//     let categories = await Category.find({});
-//     // let count =null;
-//     // let list =null;
-
-//     const user = req.session.user;
-//     if(user){
-//         req.session.user.discount= null;
-        
-//     }
-//    res.render('user/product',{products,categories,user,count,list});
-// });
-
-// userProductRouter.get('/', (req,res)=>{
-//     // const admin = req.session.admin;
-//     res.send("user details page added")
-// });
 
 

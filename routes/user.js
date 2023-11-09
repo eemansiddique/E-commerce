@@ -11,7 +11,11 @@ const router=express.Router();
  const Wishlist=require('../model/wishlistModel')
  const Category = require("../model/category");
  const Product = require("../model/product");
+//  const Order = require("../model/orderModel");
  const Cart= require("../model/cartModel");
+ const otpGenerator = require("otp-generator");
+ const Otp = require("../model/userPasswordResetModel");
+ const Banner = require("../model/bannerModel");
 
 //  require=('dotenv').config();
  require('dotenv/config')
@@ -81,6 +85,39 @@ const securePassword = async (password) => {
      res.redirect('/register');
     } catch (error) {
       console.log("email not sent");
+      console.log(error);
+    }
+  };
+
+  const sendPasswordResetOtp = async ({ _id, email }, res) => {
+    try {
+      const otp = otpGenerator.generate(6, {
+        upperCaseAlphabets: false,
+        specialChars: false,
+        lowerCaseAlphabets: false,
+      });
+      console.log(otp + "  otp");
+      const mailOptions = {
+        from:process.env.EMAIL_ID,
+        to: email,
+        subject: "Password reset",
+        html: `<p>Your OTP is : ${otp}.</p><p>This will <b>expire in 3 minutes</b>.</p>`,
+      };
+      // const hashedOtp = await securePassword(otp);
+      // console.log('otp hashed  '+ hashedOtp);
+      const newOtp = new Otp({
+        userId: _id,
+        otp: otp,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 1000 * 60 * 3,
+      });
+      await newOtp.save();
+      console.log("otp saved");
+  
+      await transporter.sendMail(mailOptions);
+      console.log("otp sent");
+    } catch (error) {
+      console.log(" otp email not sent");
       console.log(error);
     }
   };
@@ -244,6 +281,7 @@ const securePassword = async (password) => {
 router.get("/", async (req, res) => {
   try {
     const user = req.session.user;
+    const banners = await Banner.find({});
     const categories = await Category.find({});
     const specials = await Product.find({ special: true });
     let count = null;
@@ -268,7 +306,7 @@ router.get("/", async (req, res) => {
     }
 
     res.render("user/homepage", { user, wishcount , categories,count,
-      specials});
+      specials,banners});
   } catch (error) {
     console.error(error);
     res.status(500).send("An error occurred");
@@ -411,6 +449,134 @@ router.post("/search", async (req, res) => {
   search = search.slice(0, 10);
   console.log(payload);
   res.json({ payload: search });
+});
+
+
+router.get("/forgot-password", async (req, res) => {
+  let error = req.flash("error");
+  let success = req.flash("success");
+  let account = null;
+  if (req.session.account) {
+    account = req.session.account;
+  }
+  res.render("user/forgot-password", { error, success, account });
+});
+router.post("/check-email", async (req, res) => {
+  let email = req.body.email;
+  await User.findOne({ email: email }).then(async (account) => {
+    if (account) {
+      req.session.account = account;
+      await sendPasswordResetOtp(account, res)
+        .then(() => {
+          req.flash("success", "OTP has been sent. Check your email.");
+          res.redirect("/forgot-password");
+        })
+        .catch((error) => {
+          req.flash("error", "OTP has not been sent.");
+          res.redirect("/forgot-password");
+        });
+    } else {
+      req.flash("error", "No user found");
+      res.redirect("/forgot-password");
+    }
+  });
+});
+
+router.get("/resend-otp", async (req, res) => {
+  await sendPasswordResetOtp(req.session.account, res);
+  res.redirect("/forgot-password");
+});
+router.post("/verify-otp/:id", async (req, res) => {
+  let bodyotp = req.body.otp;
+  // let otp = await securePassword(bodyotp);
+  let id = req.params.id;
+  console.log(bodyotp);
+  Otp.find({ userId: id })
+
+    .then((result) => {
+      if (result.length > 0) {
+        const { expiresAt } = result[result.length - 1];
+        console.log(expiresAt);
+        const sentOtp = result[result.length - 1].otp;
+        if (expiresAt < Date.now()) {
+          console.log("expired");
+          Otp.findOneAndDelete({ userId: id })
+            .then((result) => {
+              req.flash("error", "OTP has expired,try again.");
+              res.redirect("/forgot-Password");
+            })
+            .catch((error) => {
+              console.log(error);
+              console.log("err in email deletion");
+            });
+        } else {
+          console.log(bodyotp + "  " + sentOtp);
+
+          if (bodyotp == sentOtp) {
+            // User.updateOne({ _id: userId }, { $set: { verified: true } })
+            //     .then(() => {
+            //         EmailVerification.deleteOne({ userId })
+            //             .then(() => {
+            //                 req.flash('success', 'Your email has been verified.Go and Login now !')
+
+            //                 res.redirect('/register')
+            //             })
+            //             .catch(error => {
+            //                 console.log(error);
+            //             })
+            //     })
+            //     .catch(error => {
+            //         console.log(error);
+            //     })
+            Otp.deleteMany({ userId: id });
+            req.session.account.otp = true;
+            req.flash("success", "Now update your password");
+            res.redirect("/forgot-password");
+          } else {
+            req.flash("error", `Otp is invalid.`);
+
+            res.redirect("/forgot-password");
+          }
+        }
+      } else {
+        req.flash("error", `No registered User found`);
+
+        res.redirect("/forgot-password");
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      console.log("error in find");
+    });
+});
+
+
+router.post("/change-password/:id", async (req, res) => {
+  try {
+    const { npassword } = req.body;
+    const id = req.params.id;
+    const spassword = await securePassword(npassword);
+    console.log(id);
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      // Handle the case where the user with the provided ID is not found
+      req.flash("error", "User not found");
+      return res.redirect("/login");
+    }
+
+    user.password = spassword;
+    await user.save();
+
+    req.flash("success", "Password changed successfully");
+    res.redirect("/login");
+  } catch (err) {
+    console.error(err);
+    // Handle other errors here
+    req.flash("error", "An error occurred while changing the password");
+    res.redirect("/login");
+  }
 });
 
 

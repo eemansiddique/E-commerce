@@ -9,6 +9,14 @@ const Address = require("../model/addressModel");
 const User = require('../model/user');
 const Order = require("../model/orderModel");
 const Coupon = require("../model/couponModel");
+const Wallet=require("../model/walletModel");
+
+const crypto = require('crypto'); 
+const Razorpay = require("razorpay");
+var instance = new Razorpay({
+    key_id: 'rzp_test_Evbm1KLpExRy2h',
+    key_secret: 'gKzuYiM6jgRpAnC67W689LpF',
+});
 
 
 cartRouter.get("/",auth.isUser, async (req, res) => {
@@ -110,106 +118,8 @@ cartRouter.get("/",auth.isUser, async (req, res) => {
     }
   });
   
-//   cartRouter.post("/discount-coupon", async (req, res) => {
-//     let coupon = req.body.coupon;
-//     console.log(coupon);
-//     let total = req.session.user.total;
-//     Coupon.findOne({ coupon: coupon }, (err, c) => {
-//       if (err) console.log(err);
-//       if (c) {
-//         let offer = c.offer;
-//         // let expireDays = c.expiry
-//         // let couponDate = new Date(c.date)
-//         // couponDate.setDate(couponDate.getDate()+expireDays);
-//         // console.log(couponDate);
-//         let date = new Date();
-//         let exDate = new Date(c.expiry);
-//         // date = date.toDateString();
-//         date = date.getTime();
-//         exDate = exDate.getTime();
-//         console.log(date + " now", exDate + "   exp");
-//         console.log(c.coupon + " name");
-//         if (total >= c.minimum) {
-//           if (date > exDate) {
-//             console.log("expired");
-//             req.flash("error", "coupon expired!");
-//             res.json({ status: false });
-//           } else {
-//             if (coupon.includes("%")) {
-//               req.session.user.discount = parseFloat(
-//                 (req.session.user.total * offer) / 100
-//               ).toFixed(0);
-//             } else {
-//               req.session.user.discount = offer;
-//             }
-  
-//             res.json({ status: true });
-//           }
-//         } else {
-//           req.flash("error", `Your total amount is less than ${c.minimum}`);
-//           res.json({ status: false });
-//         }
-//       } else {
-//         req.flash("error", "Invalid coupon!");
-//         res.json({ status: false });
-//       }
-//     });
-//   });
-  
-//   cartRouter.get("/add/:product", async (req, res) => {
-//     if (req.session.user) {
-//       let productid = req.params.product;
-//       console.log(productid);
-//       let user = req.session.user;
-//       let product = await Product.findById(productid);
-//       let price = product.price;
-//       let id = user._id;
-  
-//       let userCart = await Cart.findOne({ userId: id });
-  
-//       if (!userCart) {
-//         let newcart = new Cart({
-//           userId: id,
-//           cart: [
-//             {
-//               product: productid,
-//               quantity: 1, // Set the initial quantity to 1
-//               price: price,
-//               sub_total: price,
-//             },
-//           ],
-//         });
-//         await newcart.save();
-//         console.log("cart created");
-//       } else {
-//         // Check if the product already exists in the cart
-//         let existingProduct = userCart.cart.find(item => item.product === productid);
-  
-//         if (existingProduct) {
-//           // If the product already exists, increment the quantity
-//           existingProduct.quantity += 1;
-//           existingProduct.sub_total = existingProduct.quantity * existingProduct.price;
-//         } else {
-//           // If the product does not exist, add it to the cart with a quantity of 1
-//           userCart.cart.push({
-//             product: productid,
-//             quantity: 1,
-//             price: price,
-//             sub_total: price,
-//           });
-//         }
-  
-//         await userCart.save();
-//         console.log("Quantity updated");
-//       }
-  
-//       console.log(userCart);
-  
-//       res.json({ status: true });
-//     } else {
-//       res.json({ status: false });
-//     }
-//   });
+
+
 cartRouter.get("/add/:product", async (req, res) => {
     if (req.session.user) {
       let productid = req.params.product;
@@ -366,8 +276,7 @@ cartRouter.post("/change-quantity", auth.isUser, async (req, res) => {
   //click proceed to check this render this  place order  page 
   cartRouter.get("/place-order", auth.isUser, async (req, res) => {
     let user = req.session.user;
-    let address = await Address.findOne({ userId: user._id });
-    console.log(address + " address");
+    let address=await Address.findOne({userId:user._id});
     let total = req.session.user.total;
     let discount = req.session.user.discount;
     let shipping;
@@ -400,90 +309,44 @@ cartRouter.post("/change-quantity", auth.isUser, async (req, res) => {
       count,
       wishcount,
       address,
-      total,
+       total,
       shipping,
       discount,
     });
   });
-//order placed code
-//   cartRouter.post(
-//     "/place-order/select-address",
-//     auth.isUser,
-//     async (req, res) => {
-//       let addressIndex = req.body.addressIndex;
-//       let user = req.session.user;
-//       // console.log(addressIndex );
-//       let address = await Address.findOne({ userId: user._id });
-//       let change = address.details.map((item) => {
-//         item.select = false;
-//         return item;
-//       });
-//       await Address.findOneAndUpdate(
-//         { userId: user._id },
-//         { $pull: { details: {} } }
-//       ).then((res) => {
-//         console.log(res);
-//       });
-//       await Address.findOneAndUpdate(
-//         { userId: user._id },
-//         { $push: { details: change } }
-//       ).then((res) => {
-//         console.log(res);
-//       });
-//       // console.log(change);
-//       Address.findOne({ userId: user._id }).then((res) => {
-//         let item = res.details[addressIndex];
-//         item.select = true;
-//         res.save();
-//       });
+
+  cartRouter.post("/place-order/select-address", auth.isUser, async (req, res) => {
+    try {
+      const addressIndex = req.body.addressIndex;
+      const user = req.session.user;
   
-//       // console.log(selectAddress + "slelehjjhf");
-//       // address = address.details;
-//       // address = address[addressIndex] ;
-//       res.json({ status: true });
-//     }
-//   );
-// cartRouter.post("/place-order/select-address", auth.isUser, async (req, res) => {
-//     try {
-//         // Check if the user is the session user
-//         if (req.user._id !== req.session.userId) {
-//             return res.status(403).json({ error: 'Access denied' });
-//         }
+      // Find the user's address
+      const address = await Address.findOne({ userId: user._id });
+  
+      // Create an array of changes to mark all addresses as unselected
+      const change = address.details.map((item) => {
+        item.select = false;
+        return item;
+      });
+  
+      // Clear the user's address details
+      await Address.findOneAndUpdate({ userId: user._id }, { $pull: { details: {} } });
+  
+      // Update the user's address with the changes
+      await Address.findOneAndUpdate({ userId: user._id }, { $push: { details: change } });
+  
+      // Select the specified address
+      const selectedAddress = address.details[addressIndex];
+      selectedAddress.select = true;
+      await address.save();
+  
+      res.json({ status: true });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "An error occurred" });
+    }
+  });
 
-//         // Validate and sanitize the input data (you can use a validation library like 'express-validator')
-
-//         // Create a new address using the Address model
-//         const newAddress = new Address({
-//             name: req.body.name,
-//             housename: req.body.housename,
-//             street: req.body.street,
-//             landmark: req.body.landmark,
-//             pin: req.body.pin,
-//             district: req.body.district,
-//             contact: req.body.contact,
-//             state: 'Kerala', // Assuming it's always Kerala
-//             country: 'India', // Assuming it's always India
-//         });
-
-//         // Save the new address
-//         await newAddress.save();
-
-//         // Find the user by their ID
-//         const user = await User.findById(req.user._id);
-
-//         // Push the new address to the user's details array
-//         user.details.push(newAddress);
-
-//         // Save the user with the updated address array
-//         await user.save();
-//         console.log(user,"user")
-
-//         res.status(200).json({ success: true });
-//     } catch (error) {
-//         console.error(error);
-//         res.status(500).json({ error: 'Internal server error' });
-//     }
-// });
 cartRouter.post(
     "/place-order/select-address",
     auth.isUser,
@@ -530,20 +393,38 @@ cartRouter.post(
     }
   );
 
-//payment
-  cartRouter.post("/payment", auth.isUser, async (req, res) => {
+
+ 
+  
+
+
+
+
+
+
+
+//wallet and shipping charge corrected code
+function confirmWalletUse(req, res, next) {
+  // Check if the user has confirmed the wallet deduction
+  if (!req.body.confirmWalletUse) {
+    return res.status(400).json({ status: "Wallet deduction not confirmed" });
+  }
+  next(); // Proceed to the next middleware or route
+}
+
+cartRouter.post("/payment", auth.isUser, async (req, res) => {
+  try {
     let user = req.session.user;
     let paymentMethod = req.body.payment;
     let total = req.session.user.total;
     let carts = await Cart.findOne({ userId: user._id }).populate("cart.product");
     let address = await Address.findOne({ userId: user._id });
-    let orders = await Order.findOne({userId:user._id});
     let selectAddress = address.details.filter((item) => {
       return item.select == true;
     });
     let cart = carts.cart;
-    console.log(cart + "  vctfygu");
-  
+    console.log(cart + " vctfygu");
+
     let shipping;
     if (total > 2500) {
       shipping = 0;
@@ -552,53 +433,163 @@ cartRouter.post(
     }
     let discount = req.session.user.discount ? req.session.user.discount : 0;
     let status = paymentMethod == "COD" ? "placed" : "pending";
-  
-    console.log("orders is not there");
-  
-    let order = new Order({
-      userId: user._id,
-      address: selectAddress[0],
-      orderDetails: cart,
-      total: total,
-      shipping: shipping,
-      discount: discount,
-      date: new Date(),
-      status: status,
-      deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
-    });
-    order.save();
-  
-    await Cart.findByIdAndUpdate(
-      { _id: carts._id },
-      { $pull: { cart: {} } }
-    ).then((res) => {
-      console.log(res + "deleted cart");
-    });
-    if (status == "placed")
-     {
-      console.log(status + "  sttrts ");
-      res.json({ codStatus: status });
-    } else if (status == "pending") {
-      let orders = await Order.findById(order._id);
-  
-      let options = {
-        amount: parseInt(total) * 100, // amount in the smallest currency unit
-        currency: "INR",
-        receipt: "" + orders._id,
-      };
-      instance.orders.create(options, function (err, order) {
-        if (err) console.log(err);
-        console.log(order + " new order");
-        console.log(order.receipt + " new order");
-        res.json(order);
+
+    // Calculate the total cost of the order with shipping and discounts
+    let orderTotal = total + shipping - discount;
+
+    // Check if the user has a wallet
+    let wallet = await Wallet.findOne({ userId: user._id });
+
+    if (wallet) {
+      // Calculate the wallet balance available for deduction
+      let walletBalance = wallet.balance;
+      let walletDeduction = 0;
+
+      if (walletBalance >= orderTotal) {
+        // If wallet balance is greater than or equal to the order total,
+        // deduct the entire order total from the wallet
+        walletDeduction = orderTotal;
+      } else {
+        // If wallet balance is less than the order total,
+        // deduct the wallet balance from the order total
+        walletDeduction = walletBalance;
+      }
+
+      // Calculate the remaining amount to be paid through COD or online payment
+      let remainingAmount = orderTotal - walletDeduction;
+
+      // Prompt the user for confirmation
+      if (walletDeduction > 0) {
+        // Here, you can implement a confirmation dialog or ask the user for confirmation
+        // You can use a middleware to handle this confirmation step
+        
+        // For simplicity, I'll assume user confirmation using a boolean variable
+        const userConfirmed = req.body.confirmWalletUse; // Add a confirmation field in your request body
+
+        if (!userConfirmed) {
+          return res.status(400).json({ status: "Wallet deduction not confirmed" });
+        }
+      }
+
+      // Deduct the wallet deduction amount from the wallet balance
+      wallet.balance -= walletDeduction;
+
+      // Create a new order with the payment method and wallet deduction
+      let order = new Order({
+        userId: user._id,
+        address: selectAddress[0],
+        orderDetails: cart,
+        total: orderTotal, // Use the calculated order total with shipping and discounts
+        shipping: shipping,
+        discount: discount,
+        date: new Date(),
+        status: status,
+        deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
+        paymentMethod: paymentMethod,
+        walletDeduction: walletDeduction, // Add wallet deduction to the order
       });
+
+      // Save the updated wallet balance
+      await wallet.save();
+
+      // Save the order
+      await order.save();
+
+      // Clear the user's cart
+      await Cart.findByIdAndUpdate({ _id: carts._id }, { $pull: { cart: {} } });
+
+      if (status == "placed") {
+        console.log(status + " sttrts ");
+        res.json({ codStatus: status });
+      } else if (status == "pending") {
+        let options = {
+          amount: parseInt(remainingAmount) * 100, // amount in the smallest currency unit
+          currency: "INR",
+          receipt: "" + order._id,
+        };
+
+        instance.orders.create(options, function (err, order) {
+          if (err) console.log(err);
+          console.log(order + " new order");
+          console.log(order.receipt + " new order");
+          res.json(order);
+        });
+      }
+    } else {
+      console.log("User wallet not found");
+      res.status(404).json({ status: "User wallet not found" });
     }
-    
- }
-) 
-
-
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    res.status(500).json({ status: "Internal server error" });
+  }
+});
   
+
+
+
+//razorpay
+
+
+cartRouter.post("/verify-payment", async (req, res) => {
+    try {
+        console.log("Payment verification");
+
+        const data = req.body;
+        console.log("Received data:", data);
+
+        const secretKey = "gKzuYiM6jgRpAnC67W689LpF"; // Your secret key
+
+        let hmac = crypto.createHmac("sha256", secretKey);
+
+        hmac.update(
+            data["payment[razorpay_order_id]"] +
+            "|" +
+            data["payment[razorpay_payment_id]"]
+        );
+
+        const computedSignature = hmac.digest("hex");
+
+        console.log("Computed Signature:", computedSignature);
+        console.log("Received Signature:", data["payment[razorpay_signature]"]);
+        console.log("Order ID:", data["order[receipt]"]);
+
+        if (computedSignature === data["payment[razorpay_signature]"]) {
+            const orderId = data["order[receipt]"];
+            console.log("Order ID:", orderId);
+
+            // Find the order by its ID
+            const order = await Order.findOne({ _id: orderId });
+
+            if (order) {
+                console.log("Found order:", order);
+
+                // Update the order with payment details
+                order.paymentId = data["payment[razorpay_payment_id]"];
+                order.signature = data["payment[razorpay_signature]"];
+                order.orderId = orderId; // Corrected the field name to 'orderId'
+                order.status = "placed";
+
+                // Save the updated order
+                const savedOrder = await order.save();
+                console.log("Order status and payment details updated:", savedOrder);
+
+                res.json({ status: "Payment verified and saved" });
+            } else {
+                console.log("Order not found for ID:", orderId);
+                res.status(404).json({ status: "Order not found" });
+            }
+        } else {
+            console.log("Payment failed - Signature mismatch");
+            res.status(403).json({ status: "Payment failed" });
+        }
+    } catch (error) {
+        console.error("Error in payment verification:", error);
+        res.status(500).json({ status: "Internal server error" });
+    }
+});
+
+
 cartRouter.get("/place-order/success", auth.isUser, async (req, res) => {
     try {
         console.log("hdgajhk")
