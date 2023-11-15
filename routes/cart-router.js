@@ -412,125 +412,327 @@ function confirmWalletUse(req, res, next) {
   next(); // Proceed to the next middleware or route
 }
 
-cartRouter.post("/payment", auth.isUser, async (req, res) => {
-  try {
-    let user = req.session.user;
-    let paymentMethod = req.body.payment;
-    let total = req.session.user.total;
-    let carts = await Cart.findOne({ userId: user._id }).populate("cart.product");
-    let address = await Address.findOne({ userId: user._id });
-    let selectAddress = address.details.filter((item) => {
-      return item.select == true;
-    });
-    let cart = carts.cart;
-    console.log(cart + " vctfygu");
+// cartRouter.post("/payment", auth.isUser, async (req, res) => {
+//   try {
+//     let user = req.session.user;
+//     let paymentMethod = req.body.payment;
+//     let total = req.session.user.total;
+//     let carts = await Cart.findOne({ userId: user._id }).populate("cart.product");
+//     let address = await Address.findOne({ userId: user._id });
+//     let selectAddress = address.details.filter((item) => {
+//       return item.select == true;
+//     });
+//     let cart = carts.cart;
+//     console.log(cart + " vctfygu");
 
-    let shipping;
-    if (total > 2500) {
-      shipping = 0;
-    } else {
-      shipping = 100;
-    }
-    let discount = req.session.user.discount ? req.session.user.discount : 0;
-    let status = paymentMethod == "COD" ? "placed" : "pending";
+//     let shipping;
+//     if (total > 2500) {
+//       shipping = 0;
+//     } else {
+//       shipping = 100;
+//     }
+//     let discount = req.session.user.discount ? req.session.user.discount : 0;
+//     let status = paymentMethod == "COD" ? "placed" : "pending";
 
-    // Calculate the total cost of the order with shipping and discounts
-    let orderTotal = total + shipping - discount;
+//     // Calculate the total cost of the order with shipping and discounts
+//     let orderTotal = total + shipping - discount;
 
-    // Check if the user has a wallet
-    let wallet = await Wallet.findOne({ userId: user._id });
+//     // Check if the user has a wallet
+//     let wallet = await Wallet.findOne({ userId: user._id });
 
-    if (wallet) {
-      // Calculate the wallet balance available for deduction
-      let walletBalance = wallet.balance;
-      let walletDeduction = 0;
+//     if (wallet) {
+//       // Calculate the wallet balance available for deduction
+//       let walletBalance = wallet.balance;
+//       let walletDeduction = 0;
 
-      if (walletBalance >= orderTotal) {
-        // If wallet balance is greater than or equal to the order total,
-        // deduct the entire order total from the wallet
-        walletDeduction = orderTotal;
-      } else {
-        // If wallet balance is less than the order total,
-        // deduct the wallet balance from the order total
-        walletDeduction = walletBalance;
-      }
+//       if (walletBalance >= orderTotal) {
+//         // If wallet balance is greater than or equal to the order total,
+//         // deduct the entire order total from the wallet
+//         walletDeduction = orderTotal;
+//       } else {
+//         // If wallet balance is less than the order total,
+//         // deduct the wallet balance from the order total
+//         walletDeduction = walletBalance;
+//       }
 
-      // Calculate the remaining amount to be paid through COD or online payment
-      let remainingAmount = orderTotal - walletDeduction;
+//       // Calculate the remaining amount to be paid through COD or online payment
+//       let remainingAmount = orderTotal - walletDeduction;
 
-      // Prompt the user for confirmation
-      if (walletDeduction > 0) {
-        // Here, you can implement a confirmation dialog or ask the user for confirmation
-        // You can use a middleware to handle this confirmation step
+//       // Prompt the user for confirmation
+//       if (walletDeduction > 0) {
+//         // Here, you can implement a confirmation dialog or ask the user for confirmation
+//         // You can use a middleware to handle this confirmation step
         
-        // For simplicity, I'll assume user confirmation using a boolean variable
-        const userConfirmed = req.body.confirmWalletUse; // Add a confirmation field in your request body
+//         // For simplicity, I'll assume user confirmation using a boolean variable
+//         const userConfirmed = req.body.confirmWalletUse; // Add a confirmation field in your request body
 
-        if (!userConfirmed) {
-          return res.status(400).json({ status: "Wallet deduction not confirmed" });
-        }
-      }
+//         if (!userConfirmed) {
+//           return res.status(400).json({ status: "Wallet deduction not confirmed" });
+//         }
+//       }
 
-      // Deduct the wallet deduction amount from the wallet balance
-      wallet.balance -= walletDeduction;
+//       // Deduct the wallet deduction amount from the wallet balance
+//       wallet.balance -= walletDeduction;
 
-      // Create a new order with the payment method and wallet deduction
-      let order = new Order({
-        userId: user._id,
-        address: selectAddress[0],
-        orderDetails: cart,
-        total: orderTotal, // Use the calculated order total with shipping and discounts
-        shipping: shipping,
-        discount: discount,
-        date: new Date(),
-        status: status,
-        deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
-        paymentMethod: paymentMethod,
-        walletDeduction: walletDeduction, // Add wallet deduction to the order
-      });
+//       // Create a new order with the payment method and wallet deduction
+//       let order = new Order({
+//         userId: user._id,
+//         address: selectAddress[0],
+//         orderDetails: cart,
+//         total: orderTotal, // Use the calculated order total with shipping and discounts
+//         shipping: shipping,
+//         discount: discount,
+//         date: new Date(),
+//         status: status,
+//         deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
+//         paymentMethod: paymentMethod,
+//         walletDeduction: walletDeduction, // Add wallet deduction to the order
+//       });
 
-      // Save the updated wallet balance
-      await wallet.save();
+//       // Save the updated wallet balance
+//       await wallet.save();
 
-      // Save the order
-      await order.save();
+//       // Save the order
+//       await order.save();
 
-      // Clear the user's cart
-      await Cart.findByIdAndUpdate({ _id: carts._id }, { $pull: { cart: {} } });
+//       // Clear the user's cart
+//       await Cart.findByIdAndUpdate({ _id: carts._id }, { $pull: { cart: {} } });
 
-      if (status == "placed") {
-        console.log(status + " sttrts ");
-        res.json({ codStatus: status });
-      } else if (status == "pending") {
-        let options = {
-          amount: parseInt(remainingAmount) * 100, // amount in the smallest currency unit
-          currency: "INR",
-          receipt: "" + order._id,
-        };
+//       if (status == "placed") {
+//         console.log(status + " sttrts ");
+//         res.json({ codStatus: status });
+//       } else if (status == "pending") {
+//         let options = {
+//           amount: parseInt(remainingAmount) * 100, // amount in the smallest currency unit
+//           currency: "INR",
+//           receipt: "" + order._id,
+//         };
 
-        instance.orders.create(options, function (err, order) {
-          if (err) console.log(err);
-          console.log(order + " new order");
-          console.log(order.receipt + " new order");
-          res.json(order);
-        });
-      }
-    } else {
-      console.log("User wallet not found");
-      res.status(404).json({ status: "User wallet not found" });
-    }
-  } catch (error) {
-    console.error("Error processing payment:", error);
-    res.status(500).json({ status: "Internal server error" });
-  }
-});
+//         instance.orders.create(options, function (err, order) {
+//           if (err) console.log(err);
+//           console.log(order + " new order");
+//           console.log(order.receipt + " new order");
+//           res.json(order);
+//         });
+//       }
+//     } else {
+//       console.log("User wallet not found");
+//       res.status(404).json({ status: "User wallet not found" });
+//     }
+//   } catch (error) {
+//     console.error("Error processing payment:", error);
+//     res.status(500).json({ status: "Internal server error" });
+//   }
+// });
   
 
 
 
 //razorpay
 
+// cartRouter.post("/payment", auth.isUser, async (req, res) => {
+//   try {
+//     let user = req.session.user;
+//     let paymentMethod = req.body.payment;
+//     let total = req.session.user.total;
 
+//     // Check if the user has a wallet
+//     let wallet = await Wallet.findOne({ userId: user._id });
+//     if (!wallet) {
+//       console.log("User wallet not found");
+//       return res.status(404).json({ status: "User wallet not found" });
+//     }
+
+//     // Fetch user's cart and address
+//     let carts = await Cart.findOne({ userId: user._id }).populate("cart.product");
+//     let address = await Address.findOne({ userId: user._id });
+//     let selectAddress = address.details.filter((item) => item.select === true);
+
+//     // Extract relevant information from the cart
+//     let cart = carts.cart.map(item => ({
+//       product: item.product._id,
+//       quantity: item.quantity,
+//       weight: item.weight,
+//       price: item.price,
+//       sub_total: item.sub_total,
+//     }));
+
+//     // Calculate shipping cost
+//     let shipping = total > 2500 ? 0 : 100;
+
+//     // Get user discount
+//     let discount = req.session.user.discount || 0;
+
+//     // Calculate order total
+//     let orderTotal = total + shipping - discount;
+
+//     // Calculate wallet deduction
+//     let walletDeduction = Math.min(wallet.balance, orderTotal);
+
+//     // Calculate remaining amount to be paid
+//     let remainingAmount = orderTotal - walletDeduction;
+
+//     // Check if wallet deduction is confirmed by the user
+//     const userConfirmed = req.body.confirmWalletUse;
+//     if (walletDeduction > 0 && !userConfirmed) {
+//       return res.status(400).json({ status: "Wallet deduction not confirmed" });
+//     }
+
+//     // Deduct from wallet balance
+//     wallet.balance -= walletDeduction;
+
+//     // Create a new order
+//     let order = new Order({
+//       userId: user._id,
+//       address: selectAddress[0],
+//       orderDetails: cart,
+//       total: orderTotal,
+//       shipping: shipping,
+//       discount: discount,
+//       date: new Date(),
+//       status: paymentMethod === "COD" ? "placed" : "pending",
+//       deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
+//       paymentMethod: paymentMethod,
+//       walletDeduction: walletDeduction,
+//     });
+
+//     // Save the updated wallet balance and the order
+//     await Promise.all([wallet.save(), order.save()]);
+
+//     // Clear the user's cart
+//     await Cart.findByIdAndUpdate({ _id: carts._id }, { $set: { cart: [] } });
+
+//     // Respond based on the payment method
+//     if (order.status === "placed") {
+//       console.log("Order placed");
+//       res.json({ codStatus: "placed" });
+//     } else if (order.status === "pending") {
+//       let options = {
+//         amount: parseInt(remainingAmount) * 100,
+//         currency: "INR",
+//         receipt: "" + order._id,
+//       };
+
+//       // Create an order with the payment gateway
+//       instance.orders.create(options, function (err, order) {
+//         if (err) {
+//           console.error("Error creating order with payment gateway:", err);
+//           return res.status(500).json({ status: "Error creating order with payment gateway" });
+//         }
+//         console.log("New order created with payment gateway:", order);
+//         res.json(order);
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error processing payment:", error);
+//     res.status(500).json({ status: "Internal server error" });
+//   }
+// });
+
+cartRouter.post("/payment", auth.isUser, async (req, res) => {
+  try {
+    let user = req.session.user;
+    let paymentMethod = req.body.payment;
+    let total = req.session.user.total;
+
+    // Check if the user has a wallet
+    let wallet = await Wallet.findOne({ userId: user._id });
+
+    // If the user doesn't have a wallet, create a new one
+    if (!wallet) {
+      wallet = new Wallet({
+        userId: user._id,
+        balance: 0, // You can set an initial balance if needed
+      });
+
+      await wallet.save();
+    }
+
+    // Fetch user's cart and address
+    let carts = await Cart.findOne({ userId: user._id }).populate("cart.product");
+    let address = await Address.findOne({ userId: user._id });
+    let selectAddress = address.details.filter((item) => item.select === true);
+
+    // Extract relevant information from the cart
+    let cart = carts.cart.map(item => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      weight: item.weight,
+      price: item.price,
+      sub_total: item.sub_total,
+    }));
+
+    // Calculate shipping cost
+    let shipping = total > 2500 ? 0 : 100;
+
+    // Get user discount
+    let discount = req.session.user.discount || 0;
+
+    // Calculate order total
+    let orderTotal = total + shipping - discount;
+
+    // Calculate wallet deduction
+    let walletDeduction = Math.min(wallet.balance, orderTotal);
+
+    // Calculate remaining amount to be paid
+    let remainingAmount = orderTotal - walletDeduction;
+
+    // Check if wallet deduction is confirmed by the user
+    const userConfirmed = req.body.confirmWalletUse;
+    if (walletDeduction > 0 && !userConfirmed) {
+      return res.status(400).json({ status: "Wallet deduction not confirmed" });
+    }
+
+    // Deduct from wallet balance
+    wallet.balance -= walletDeduction;
+
+    // Create a new order
+    let order = new Order({
+      userId: user._id,
+      address: selectAddress[0],
+      orderDetails: cart,
+      total: orderTotal,
+      shipping: shipping,
+      discount: discount,
+      date: new Date(),
+      status: paymentMethod === "COD" ? "placed" : "pending",
+      deliveryDate: new Date(+new Date() + 1 * 24 * 60 * 60 * 1000),
+      paymentMethod: paymentMethod,
+      walletDeduction: walletDeduction,
+    });
+
+    // Save the updated wallet balance and the order
+    await Promise.all([wallet.save(), order.save()]);
+
+    // Clear the user's cart
+    await Cart.findByIdAndUpdate({ _id: carts._id }, { $set: { cart: [] } });
+
+    // Respond based on the payment method
+    if (order.status === "placed") {
+      console.log("Order placed");
+      res.json({ codStatus: "placed" });
+    } else if (order.status === "pending") {
+      let options = {
+        amount: parseInt(remainingAmount) * 100,
+        currency: "INR",
+        receipt: "" + order._id,
+      };
+
+      // Create an order with the payment gateway
+      instance.orders.create(options, function (err, order) {
+        if (err) {
+          console.error("Error creating order with payment gateway:", err);
+          return res.status(500).json({ status: "Error creating order with payment gateway" });
+        }
+        console.log("New order created with payment gateway:", order);
+        res.json(order);
+      });
+    }
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    res.status(500).json({ status: "Internal server error" });
+  }
+});
 cartRouter.post("/verify-payment", async (req, res) => {
     try {
         console.log("Payment verification");

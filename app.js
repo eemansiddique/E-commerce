@@ -13,12 +13,14 @@ const nocache = require("nocache");
 const Wishlist = require('./model/wishlistModel'); // Import your Wishlist model
 const Cart=require('./model/cartModel')
 const Coupon = require('./model/couponModel');
+const connectToMongoDB = require('./config/database');
+connectToMongoDB();
 
 
-const api=process.env.API_URL
+// const api=process.env.API_URL
 
 
-// const PORT= process.env.PORT || 4000
+ const PORT= process.env.PORT || 4000
 
 // // middleware
 app.use(bodyParser.json())
@@ -84,13 +86,13 @@ app.use('/orders',orderRouter)
 
 
 
-mongoose.connect('mongodb://localhost:27017')
-.then(()=>{
- console.log('Database connection is ready')
-})
-.catch((err)=>{
-   console.log(err)
-})
+// mongoose.connect('mongodb://localhost:27017')
+// .then(()=>{
+//  console.log('Database connection is ready')
+// })
+// .catch((err)=>{
+//    console.log(err)
+//  })
 
 // app.get("*", async (req, res) => {
 //   let user = req.session.user;
@@ -144,11 +146,14 @@ app.get("*", async (req, res) => {
  
 });
 
-app.listen(4000,()=>{
-    // console.log(api)
-    console.log('server is running')
-})
+// app.listen(4000,()=>{
+//     // console.log(api)
+//     console.log('server is running')
+// })
 
 // app.listen(PORT,()=>{
 //     console.log(`Listening to the server on http://localhost:${PORT}`)
 // })
+app.listen(process.env.PORT || 4000, () => {
+  console.log("server is running ", process.env.PORT)
+})

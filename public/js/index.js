@@ -1122,3 +1122,22 @@ function verifyPayment(payment, order) {
   });
 }
 
+$("#contact-form").submit((e)=>{
+    e.preventDefault()
+    $.ajax({
+        url:"https://script.google.com/macros/s/AKfycbxfjc_GzzXy3IrSVVWWwNdh2hPKwMM9GZ4hzwv4DvRszydAwnAWdxKeBVQ_wgq0_nE/exec",
+        data:$("#contact-form").serialize(),
+        method:"post",
+        success:function (response){
+            alert("Form submitted successfully")
+            window.location.reload()
+            //window.location.href="https://google.com"
+        },
+        error:function (err){
+            alert("Something Error")
+
+        }
+    })
+})
+
+

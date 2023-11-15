@@ -578,12 +578,62 @@ router.post("/change-password/:id", async (req, res) => {
     res.redirect("/login");
   }
 });
+router.get("/about", async (req, res) => {
+  const user = req.session.user;
 
+  let count = null;
+  if (user) {
+    req.session.user.discount = null;
+
+    const cartItems = await Cart.findOne({ userId: user._id });
+
+    if (cartItems) {
+      count = cartItems.cart.length;
+    }
+  }
+  let wishcount = null;
+
+  // let t = await Cart.findOne({ userId: id }).populate("cart.product");
+  if (user) {
+    const wishlistItems = await Wishlist.findOne({ userId: user._id });
+
+    if (wishlistItems) {
+      wishcount = wishlistItems.wishlist.length;
+    }
+  }
+  res.render("user/about", { user, count, wishcount });
+});
 
 router.get("/logout", (req, res) => {
   req.session.user = null;
   req.flash("success", "You are logged out successfully!");
   res.redirect("/login");
+});
+
+router.get("/contact", async (req, res) => {
+  const user = req.session.user;
+
+  let count = null;
+  if (user) {
+    req.session.user.discount = null;
+
+    const cartItems = await Cart.findOne({ userId: user._id });
+
+    if (cartItems) {
+      count = cartItems.cart.length;
+    }
+  }
+  let wishcount = null;
+
+  // let t = await Cart.findOne({ userId: id }).populate("cart.product");
+  if (user) {
+    const wishlistItems = await Wishlist.findOne({ userId: user._id });
+
+    if (wishlistItems) {
+      wishcount = wishlistItems.wishlist.length;
+    }
+  }
+  res.render("user/contact", { user, count, wishcount });
 });
 
 module.exports=router;
